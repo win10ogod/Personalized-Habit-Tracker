@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized Habit Tracker</title>
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js Library (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <h1>Personalized Habit Tracker</h1>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- Section for Adding and Managing Habits -->
+        <section id="habit-form-section">
+            <h2>Add New Habit</h2>
+            <form id="habit-form">
+                <div>
+                    <label for="habit-name">Habit Name:</label>
+                    <input type="text" id="habit-name" name="habit-name" required>
+                </div>
+                <div>
+                    <label for="habit-frequency">Frequency:</label>
+                    <select id="habit-frequency" name="habit-frequency">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                    </select>
+                </div>
+                <input type="submit" value="Add Habit">
+            </form>
+            <button id="request-permission-btn" style="margin-top: 15px;">Enable Reminders</button>
+        </section>
+        
+        <!-- Section for Displaying List of Habits -->
+        <section id="habits-list-section">
+            <h2>My Habits</h2>
+            <ul id="habits-list">
+                <!-- Habit items will be populated here by JavaScript -->
+                <!-- Example: 
+                <li class="habit-item" data-habit-id="123">
+                    <span>Exercise (Daily)</span>
+                    <button class="complete-btn">Mark Complete</button>
+                </li> 
+                -->
+            </ul>
+        </section>
+        
+        <!-- Section for Calendar View -->
+        <section id="calendar-section">
+            <h2>Calendar View</h2>
+            <div class="calendar-navigation">
+                <button id="prev-month-btn">Previous Month</button>
+                <h3 id="month-year-display">Month Year</h3> <!-- Populated by JS -->
+                <button id="next-month-btn">Next Month</button>
+            </div>
+            <div id="calendar-container">
+                <!-- Calendar days will be populated here by JavaScript -->
+            </div>
+        </section>
+        
+        <!-- Section for Habit Progress Bars -->
+        <section id="progress-section">
+            <h2>Habit Progress</h2>
+            <div id="progress-bars-container">
+                <!-- Progress bars will be populated here by JavaScript -->
+            </div>
+        </section>
+        
+        <!-- Section for Habit Analysis Charts -->
+        <section id="charts-section">
+             <!-- Main container for charts, title is inside -->
+            <div id="charts-container">
+                <h2>Habit Analysis</h2> 
+                <div>
+                    <h3>Completion Streaks (Longest)</h3>
+                    <canvas id="streak-chart"></canvas>
+                </div>
+                <div>
+                    <h3>Overall Completion Rates</h3>
+                    <canvas id="completion-rate-chart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2023 Personalized Habit Tracker</p>
+    </footer>
+
+    <!-- Main JavaScript File -->
+    <script defer src="script.js"></script>
+</body>
+</html>

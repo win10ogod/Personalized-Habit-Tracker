@@ -18,6 +18,7 @@ A client-side web application designed to help users define, track, and maintain
 *   **Reminder Notifications:** Basic browser notifications to remind users of incomplete daily habits (permission-based).
 *   **Responsive Design:** The interface is designed to be usable across various screen sizes, from desktops to mobile devices.
 *   **User-Friendly Interface:** A clean and intuitive UI for ease of use.
+*   **Duplicate Name Prevention:** Prevents creation of habits with duplicate names (case-insensitive) to ensure data clarity.
 
 ## How to Use / Getting Started
 

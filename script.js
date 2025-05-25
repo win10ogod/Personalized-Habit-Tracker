@@ -544,9 +544,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Check for duplicate habit names (case-insensitive)
+            const lowerCaseHabitName = habitName.toLowerCase();
+            const isDuplicate = habits.some(
+                habit => habit.name.toLowerCase() === lowerCaseHabitName
+            );
+
+            if (isDuplicate) {
+                alert(`A habit named "${habitName}" already exists. Please use a different name.`);
+                habitNameInput.value = ''; // Clear input
+                return; // Stop processing
+            }
+
             const newHabit = {
                 id: Date.now(),
-                name: habitName,
+                name: habitName, // Use original habitName for display, comparison is case-insensitive
                 frequency: habitFrequency,
                 creationDate: new Date().toISOString(),
                 completedDates: []

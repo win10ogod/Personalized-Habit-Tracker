@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     data: streakData,
                     backgroundColor: streakChartBackgroundColor,
                     borderColor: streakChartBorderColor,
-                    borderWidth: 1
+                    borderWidth: 1 // This is already thin, keep as 1
                 }]
             },
             options: { 
@@ -330,8 +330,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         title: {
                             display: true,
                             text: 'Days'
+                        },
+                        grid: {
+                            lineWidth: 1 // Thinner grid lines for Y-axis
                         }
-                    } 
+                    },
+                    x: { // Added to ensure X-axis grid lines are also thin if they appear
+                        grid: {
+                            lineWidth: 1 // Thinner grid lines for X-axis
+                        }
+                    }
                 },
                 plugins: {
                     legend: {
@@ -358,6 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     label: 'Overall Completion Rate', // Used in tooltip
                     data: completionRateData.map(rate => parseFloat(rate.toFixed(1))),
                     backgroundColor: pieColors, // Apply the defined palette
+                    borderColor: '#ffffff', // Add a border color for segments, usually white for separation
+                    borderWidth: 1, // Thinner lines between pie segments
                     hoverOffset: 4
                 }]
             },

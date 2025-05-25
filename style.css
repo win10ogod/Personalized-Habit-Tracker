@@ -5,6 +5,7 @@
     --primary-color: #007bff; /* Example: Blue */
     --secondary-color: #6c757d; /* Example: Gray */
     --success-color: #28a745; /* Example: Green */
+    --danger-color: #dc3545; /* Example: Red */
     --light-bg-color: #f8f9fa;
     --dark-text-color: #212529;
     --light-text-color: #ffffff;
@@ -152,10 +153,12 @@ section h2 { /* Main title for sections like "My Habits" */
 .btn-primary {
     background-color: var(--success-color); /* Green for primary add action */
     border-color: var(--success-color);
+    color: var(--light-text-color);
 }
 .btn-primary:hover {
     background-color: #1e7e34; /* Darker green */
     border-color: #1c7430;
+    color: var(--light-text-color);
 }
 .btn-primary:focus-visible { /* For keyboard navigation */
     outline: 2px solid var(--success-color);
@@ -167,16 +170,31 @@ section h2 { /* Main title for sections like "My Habits" */
 .btn-secondary {
     background-color: var(--primary-color); /* Blue for this */
     border-color: var(--primary-color);
+    color: var(--light-text-color);
 }
 .btn-secondary:hover {
     background-color: #0056b3;
     border-color: #004085;
+    color: var(--light-text-color);
 }
 .btn-secondary:disabled {
     background-color: #adb5bd; /* Gray for disabled */
     border-color: #adb5bd;
     cursor: not-allowed;
 }
+
+/* Danger Button (Clear All Records) */
+.btn-danger {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+    color: var(--light-text-color);
+}
+.btn-danger:hover {
+    background-color: #c82333; /* Darker red */
+    border-color: #bd2130;
+    color: var(--light-text-color);
+}
+
 
 #habit-form-section form input[type="submit"] { /* Apply primary button style */
     width: 100%;
@@ -186,14 +204,8 @@ section h2 { /* Main title for sections like "My Habits" */
     margin-top: 0.75rem; /* Consistent margin */
 }
 
-/* Apply .btn and .btn-primary / .btn-secondary to HTML elements for these styles to take effect */
-/* Example for current structure:
-   #habit-form-section form input[type="submit"] will need class="btn btn-primary"
-   #request-permission-btn will need class="btn btn-secondary"
-   Calendar buttons will need class="btn btn-secondary btn-sm" (if smaller size is desired)
-*/
-
 /* For current structure without adding classes to HTML (less ideal but works): */
+/* These will be overridden by the classes added in index.html */
 #habit-form-section form input[type="submit"] {
     font-weight: 500; text-align: center; vertical-align: middle; cursor: pointer; user-select: none;
     border: 1px solid transparent; padding: 0.65rem 1.25rem; font-size: 1rem; line-height: 1.5;
@@ -492,3 +504,5 @@ footer {
     #charts-container > div { padding: 15px; }
     #charts-container canvas { height: 220px !important; }
 }
+
+[end of style.css]

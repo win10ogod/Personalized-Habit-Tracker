@@ -4,21 +4,21 @@ A client-side web application designed to help users define, track, and maintain
 
 ## Features
 
-*   **Habit Management:** Add new habits with options for daily or weekly frequency.
-*   **Completion Tracking:** Easily mark habits as complete for the current day.
+*   **Habit Management:** Add new habits with options for daily or weekly frequency. Multiple habits with the same name can be added (e.g., for different times of day) and are tracked individually but aggregated in statistical views.
+*   **Count-Based Completion Tracking:** Mark habits complete multiple times per day. Each click increments a daily completion count for the habit.
 *   **Data Persistence:** All habit data is saved in the browser's LocalStorage, ensuring data remains available across sessions (no backend needed).
-*   **Calendar View:** Visualize habit completion history on an interactive monthly calendar.
+*   **Calendar View:** Visualize habit completion history on an interactive monthly calendar. Days where a habit was performed at least once are highlighted.
 *   **Calendar Navigation:** Navigate through different months to review past activity.
 *   **Progress Bars:** Track current progress for both daily and weekly habits.
-    *   Daily habits show completion for the current day.
-    *   Weekly habits show completion for the current week (Monday to Sunday).
-*   **Data Analysis Charts:**
-    *   **Longest Completion Streak:** A bar chart displaying the longest consecutive streak of completions for each habit.
-    *   **Overall Completion Rate:** A pie chart showing the overall completion percentage for each habit since its creation.
-*   **Reminder Notifications:** Basic browser notifications to remind users of incomplete daily habits (permission-based).
+    *   Daily habits show completion count against a target (default 1, e.g., "2/1 completions").
+    *   Weekly habits show the number of days in the current week the habit was performed at least once (e.g., "3/7 days").
+*   **Data Analysis Charts (Aggregated by Habit Name):**
+    *   **Max Daily Completions (Bar Chart):** Displays the maximum number of times a habit (or all habits of the same name combined) was completed on any single day.
+    *   **Consistency Rate (Pie Chart):** Shows the percentage of days a habit (or all habits of the same name combined) has been performed at least once since its creation date.
+*   **Reminder Notifications:** Basic browser notifications to remind users of incomplete daily habits (permission-based, checks against target count).
 *   **Responsive Design:** The interface is designed to be usable across various screen sizes, from desktops to mobile devices.
 *   **User-Friendly Interface:** A clean and intuitive UI for ease of use.
-*   **Duplicate Name Prevention:** Prevents creation of habits with duplicate names (case-insensitive) to ensure data clarity.
+*   **Clear All Records:** An option to clear all habit data from the application and browser storage, with a confirmation prompt.
 
 ## How to Use / Getting Started
 
@@ -36,14 +36,20 @@ A client-side web application designed to help users define, track, and maintain
 
     No build steps or special dependencies are required as this is a vanilla HTML, CSS, and JavaScript project. Chart.js is included via a CDN.
 
+3.  **Using the Tracker:**
+    *   Add habits using the form. You can add multiple habits with the same name if you wish to track them as separate instances (e.g., "Drink Water" in the morning and "Drink Water" in the afternoon). Statistical views will aggregate data for habits with the same name.
+    *   Click the "Mark Complete" button for a habit to record a completion. Each click increments the daily count for that habit. The button will update to show the number of completions for the day (e.g., "Completed (2)").
+    *   Explore your progress via the calendar, progress bars, and charts.
+    *   Use the "Clear All Records" button in the footer if you wish to reset all your data (a confirmation will be asked).
+
 ## Screenshots
 
 *(Placeholder: Screenshots would ideally be placed here to provide a visual overview of the application. For example:*
 
-*   *Main dashboard showing the habit list and the form to add new habits.*
+*   *Main dashboard showing the habit list (with completion counts) and the form to add new habits.*
 *   *Calendar view with completed days highlighted for a selected month.*
-*   *Progress bars section displaying current completion status.*
-*   *Charts section showing the completion streak bar chart and the overall completion rate pie chart.)*
+*   *Progress bars section displaying current completion status (e.g., "2/1 completions" or "3/7 days").*
+*   *Charts section showing the "Max Daily Completions" bar chart and the "Consistency Rate" pie chart.)*
 
 ## Technology Stack
 
@@ -59,6 +65,7 @@ A client-side web application designed to help users define, track, and maintain
 
 ## Potential Future Improvements
 
+*   **Customizable Target Counts:** Allow users to set a specific `targetCount` per day for each habit (e.g., "Drink Water 8 times a day").
 *   **Advanced Weekly Habits:** Allow tracking habits for specific days of the week (e.g., Mon, Wed, Fri) or a target number of times per week (e.g., "Exercise 3 times a week").
 *   **Customizable Reminders:** More granular control over reminder timings, snooze options, and reminder sounds.
 *   **Data Management:** Implement functionality for exporting and importing habit data (e.g., as JSON or CSV files).

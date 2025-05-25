@@ -320,6 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }]
             },
             options: { 
+                indexAxis: 'x', // Explicitly set for vertical bar chart
                 responsive: true, 
                 maintainAspectRatio: false, 
                 scales: { 

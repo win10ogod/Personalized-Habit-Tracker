@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const streakChartWrapper = document.getElementById('streak-chart-wrapper');
     const completionRateChartWrapper = document.getElementById('completion-rate-chart-wrapper');
     const chartsGlobalErrorMessage = document.getElementById('charts-global-error-message');
+    const clearAllDataBtn = document.getElementById('clear-all-data-btn');
 
 
     //================================================================================
@@ -37,13 +38,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let streakChartInstance = null; 
     let completionRateChartInstance = null; 
 
-    // Habit object structure:
+    // Habit object structure (New):
     // {
-    //   id: Date.now(),                // Unique ID (timestamp)
-    //   name: 'Exercise',              // Name of the habit
-    //   frequency: 'daily',            // 'daily' or 'weekly'
-    //   creationDate: new Date().toISOString(), // ISO string of creation date
-    //   completedDates: []             // Array of ISO date strings (YYYY-MM-DD) when completed
+    //   id: Date.now(),
+    //   name: 'Exercise',
+    //   frequency: 'daily',
+    //   creationDate: new Date().toISOString(),
+    //   targetCount: 1, // Default target completions per period
+    //   completions: { 'YYYY-MM-DD': count } // Object to store completion counts for dates
     // }
 
     //================================================================================
@@ -52,13 +54,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Loads habits from LocalStorage into the global `habits` array.
+     * Migrates old habit structures to the new structure if necessary.
      * If no habits are found, initializes `habits` as an empty array.
      */
     function loadHabits() {
         const storedHabits = localStorage.getItem('habits');
         if (storedHabits) {
-            habits = JSON.parse(storedHabits);
+            let loadedHabits = JSON.parse(storedHabits);
             console.log('Habits loaded from LocalStorage.');
+
+            // Data migration for habits from old structure
+            loadedHabits = loadedHabits.map(habit => {
+                if (habit.completedDates && !habit.completions) {
+                    // This is an old habit structure, migrate it
+                    console.log(`Migrating habit: "${habit.name}"`);
+                    habit.completions = {};
+                    habit.completedDates.forEach(dateStr => {
+                        habit.completions[dateStr] = 1; // Assume count of 1 for old completed dates
+                    });
+                    delete habit.completedDates;
+                    habit.targetCount = 1; // Add default targetCount
+                } else if (!habit.completions) {
+                    // If completions is missing entirely (e.g. very old or malformed)
+                    habit.completions = {};
+                }
+                // Ensure targetCount exists
+                if (typeof habit.targetCount === 'undefined') {
+                    habit.targetCount = 1;
+                }
+                return habit;
+            });
+            habits = loadedHabits;
+            // Optionally, re-save habits immediately after migration
+            // saveHabits(); 
         } else {
             console.log('No habits found in LocalStorage. Initializing with an empty array.');
             habits = [];
@@ -102,20 +130,26 @@ document.addEventListener('DOMContentLoaded', () => {
             habitEl.dataset.habitId = habit.id;
 
             const habitInfo = document.createElement('span');
-            habitInfo.textContent = `${habit.name} (${habit.frequency})`;
+            // Get today's count for this habit
+            const todayCount = habit.completions && habit.completions[todayStr] ? habit.completions[todayStr] : 0;
 
+            if (todayCount > 0) {
+                habitInfo.textContent = `${habit.name} (${habit.frequency}) (Today: ${todayCount})`;
+                habitEl.classList.add('completed'); // Mark as completed if count > 0
+            } else {
+                habitInfo.textContent = `${habit.name} (${habit.frequency})`;
+                habitEl.classList.remove('completed'); // Ensure not marked if count is 0
+            }
+            
             const completeBtn = document.createElement('button');
             completeBtn.className = 'complete-btn';
 
-            const isCompletedToday = habit.completedDates && habit.completedDates.includes(todayStr);
-            if (isCompletedToday) {
-                habitEl.classList.add('completed');
-                completeBtn.textContent = 'Completed ✔';
-                completeBtn.disabled = true;
+            if (todayCount > 0) {
+                completeBtn.textContent = `Completed (${todayCount})`;
             } else {
                 completeBtn.textContent = 'Mark Complete';
-                completeBtn.disabled = false;
             }
+            completeBtn.disabled = false; // Button is always enabled to allow more completions
 
             completeBtn.addEventListener('click', () => handleMarkComplete(habit.id));
 
@@ -158,8 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
             dayCell.dataset.date = dateStr;
             dayCell.textContent = day;
 
-            // Check if any habit was completed on this day
-            const habitCompletedOnDay = habits.some(habit => habit.completedDates && habit.completedDates.includes(dateStr));
+            // Check if any habit was completed on this day (at least once)
+            const habitCompletedOnDay = habits.some(habit => habit.completions && habit.completions[dateStr] && habit.completions[dateStr] > 0);
             if (habitCompletedOnDay) {
                 dayCell.classList.add('day-completed-habit');
             }
@@ -196,31 +230,38 @@ document.addEventListener('DOMContentLoaded', () => {
             itemDiv.appendChild(nameLabel);
 
             let progressPercent = 0;
-            let completedCount = 0;
-            const maxCount = habit.frequency === 'weekly' ? 7 : 1; // Denominator for progress
+            const targetCount = habit.targetCount || 1; // Default to 1 if not set
+            const completions = habit.completions || {};
+            
+            const percentageText = document.createElement('span');
+            percentageText.className = 'progress-percentage';
 
             if (habit.frequency === 'daily') {
-                if (habit.completedDates && habit.completedDates.includes(todayStr)) {
-                    completedCount = 1;
-                }
+                const todayCount = completions[todayStr] || 0;
+                progressPercent = Math.min((todayCount / targetCount) * 100, 100);
+                percentageText.textContent = `${todayCount}/${targetCount} completion${targetCount !== 1 ? 's' : ''}`;
             } else if (habit.frequency === 'weekly') {
-                const dayOfWeek = today.getDay(); // 0 (Sun) - 6 (Sat)
-                const currentDayAdjusted = (dayOfWeek === 0) ? 6 : dayOfWeek - 1; // Monday = 0, Sunday = 6
+                let daysCompletedInWeek = 0;
+                const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
                 
-                let monday = new Date(today);
-                monday.setDate(today.getDate() - currentDayAdjusted);
-                monday.setHours(0, 0, 0, 0);
+                // Calculate the date of the most recent Monday
+                // If today is Sunday (0), go back 6 days. If Monday (1), go back 0 days. etc.
+                const diffToMonday = (dayOfWeek === 0) ? 6 : dayOfWeek - 1;
+                const currentMonday = new Date(today);
+                currentMonday.setDate(today.getDate() - diffToMonday);
+                currentMonday.setHours(0, 0, 0, 0);
 
-                for (let i = 0; i < 7; i++) {
-                    const dayToCheck = new Date(monday);
-                    dayToCheck.setDate(monday.getDate() + i);
-                    const dayToCheckStr = dayToCheck.toISOString().split('T')[0];
-                    if (habit.completedDates && habit.completedDates.includes(dayToCheckStr)) {
-                        completedCount++;
+                for (let i = 0; i < 7; i++) { // Iterate from Monday to Sunday
+                    const dayInWeek = new Date(currentMonday);
+                    dayInWeek.setDate(currentMonday.getDate() + i);
+                    const dateInWeekStr = dayInWeek.toISOString().split('T')[0];
+                    if (completions[dateInWeekStr] && completions[dateInWeekStr] > 0) {
+                        daysCompletedInWeek++;
                     }
                 }
+                progressPercent = (daysCompletedInWeek / 7) * 100;
+                percentageText.textContent = `${daysCompletedInWeek}/7 days`;
             }
-            progressPercent = (completedCount / maxCount) * 100;
 
             const barBackground = document.createElement('div');
             barBackground.className = 'progress-bar-background';
@@ -229,13 +270,6 @@ document.addEventListener('DOMContentLoaded', () => {
             barFill.className = 'progress-bar-fill';
             barFill.style.width = `${progressPercent}%`;
             
-            const percentageText = document.createElement('span');
-            percentageText.className = 'progress-percentage';
-            percentageText.textContent = `${Math.round(progressPercent)}%`;
-            if (habit.frequency === 'weekly') {
-                 percentageText.textContent += ` (${completedCount}/${maxCount})`;
-            }
-
             barFill.appendChild(percentageText);
             barBackground.appendChild(barFill);
             itemDiv.appendChild(barBackground);
@@ -291,7 +325,45 @@ document.addEventListener('DOMContentLoaded', () => {
         streakChartWrapper.style.display = 'block';
         completionRateChartWrapper.style.display = 'block';
 
-        const habitNames = habits.map(h => h.name);
+        // --- Data Aggregation by Habit Name ---
+        const aggregatedData = {};
+        habits.forEach(habit => {
+            const name = habit.name; // Use original casing for keys initially, can normalize if needed
+            if (!aggregatedData[name]) {
+                aggregatedData[name] = {
+                    name: habit.name, // Store original name for display
+                    completions: {},
+                    creationDate: habit.creationDate, 
+                    targetCount: habit.targetCount, 
+                    // Store all unique IDs contributing to this aggregation, if needed later
+                    ids: [habit.id] 
+                };
+            } else {
+                // Update creationDate if current habit's is earlier
+                if (new Date(habit.creationDate) < new Date(aggregatedData[name].creationDate)) {
+                    aggregatedData[name].creationDate = habit.creationDate;
+                }
+                // For targetCount, we're taking the first one. This could be averaged or handled differently if requirements change.
+                aggregatedData[name].ids.push(habit.id);
+            }
+
+            // Aggregate completions
+            for (const date in habit.completions) {
+                aggregatedData[name].completions[date] = 
+                    (aggregatedData[name].completions[date] || 0) + habit.completions[date];
+            }
+        });
+        
+        const chartReadyHabits = Object.values(aggregatedData);
+        if (chartReadyHabits.length === 0) { // Should be caught by habits.length === 0 earlier, but as a safeguard
+            chartsGlobalErrorMessage.textContent = "No habits data to display charts.";
+            chartsGlobalErrorMessage.style.display = 'block';
+            streakChartWrapper.style.display = 'none';
+            completionRateChartWrapper.style.display = 'none';
+            return;
+        }
+
+        const habitNames = chartReadyHabits.map(h => h.name);
         // Define color palettes
         const streakChartBackgroundColor = 'rgba(54, 162, 235, 0.6)'; // Primary blue
         const streakChartBorderColor = 'rgba(54, 162, 235, 1)';
@@ -305,32 +377,40 @@ document.addEventListener('DOMContentLoaded', () => {
             'rgba(255, 159, 64, 0.7)'  // Orange
         ];
 
-        // Streak Chart (Bar)
-        const streakData = habits.map(habit => calculateStreak(habit));
+        // Streak Chart (Bar) - Now Max Daily Count
+        const maxDailyCountData = chartReadyHabits.map(aggHabit => calculateMaxDailyCount(aggHabit.completions));
         streakChartInstance = new Chart(streakChartCtx, {
             type: 'bar',
             data: {
                 labels: habitNames,
                 datasets: [{
-                    // label: 'Longest Completion Streak (days)', // Legend is hidden, so label is not strictly needed
-                    data: streakData,
+                    data: maxDailyCountData,
                     backgroundColor: streakChartBackgroundColor,
                     borderColor: streakChartBorderColor,
                     borderWidth: 1
                 }]
             },
             options: { 
+                indexAxis: 'x', 
                 responsive: true, 
                 maintainAspectRatio: false, 
                 scales: { 
                     y: { 
                         beginAtZero: true, 
-                        suggestedMax: 10,
+                        // suggestedMax might need adjustment or removal depending on typical max counts
                         title: {
                             display: true,
-                            text: 'Days'
+                            text: 'Max Daily Completions' // Updated Y-axis label
+                        },
+                        grid: {
+                            lineWidth: 1 
                         }
-                    } 
+                    },
+                    x: { 
+                        grid: {
+                            lineWidth: 1 
+                        }
+                    }
                 },
                 plugins: {
                     legend: {
@@ -340,23 +420,39 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Completion Rate Chart (Pie)
-        const completionRateData = habits.map(habit => {
-            const totalCompletions = habit.completedDates ? habit.completedDates.length : 0;
-            // Calculate days since creation, ensuring at least 1 day to avoid division by zero
-            const creationDate = new Date(habit.creationDate);
+        // Completion Rate Chart (Pie) - Now Consistency (days performed / days since creation)
+        const consistencyRateData = chartReadyHabits.map(aggHabit => {
+            let daysDoneCount = 0;
+            if (aggHabit.completions) {
+                // Count days where completion count is > 0
+                daysDoneCount = Object.values(aggHabit.completions).filter(count => count > 0).length;
+            }
+            
+            const creationDate = new Date(aggHabit.creationDate);
             const today = new Date();
-            const daysSinceCreation = Math.max(1, Math.floor((today - creationDate) / (1000 * 60 * 60 * 24)));
-            return totalCompletions > 0 ? (totalCompletions / daysSinceCreation) * 100 : 0; // Rate based on actual tracking period
+            // Ensure today is not before creationDate, and calculate difference in days
+            let daysSinceCreation = 0;
+            if (today >= creationDate) {
+                daysSinceCreation = Math.floor((today - creationDate) / (1000 * 60 * 60 * 24)) + 1; // +1 to include creation day as day 1
+            } else {
+                daysSinceCreation = 1; // Should not happen if creationDate is always in the past or today
+            }
+            daysSinceCreation = Math.max(1, daysSinceCreation); // Ensure at least 1 day
+
+            const rate = (daysDoneCount / daysSinceCreation) * 100;
+            return Math.min(rate, 100); // Cap at 100%
         });
+
         completionRateChartInstance = new Chart(completionRateChartCtx, {
             type: 'pie',
             data: {
                 labels: habitNames,
                 datasets: [{
-                    label: 'Overall Completion Rate', // Used in tooltip
-                    data: completionRateData.map(rate => parseFloat(rate.toFixed(1))),
-                    backgroundColor: pieColors, // Apply the defined palette
+                    label: 'Consistency Rate', 
+                    data: consistencyRateData.map(rate => parseFloat(rate.toFixed(1))),
+                    backgroundColor: pieColors, 
+                    borderColor: '#ffffff', 
+                    borderWidth: 1, 
                     hoverOffset: 4
                 }]
             },
@@ -365,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'top', // Or 'bottom'
+                        position: 'top', 
                     },
                     tooltip: {
                         callbacks: {
@@ -375,7 +471,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     label += ': ';
                                 }
                                 if (context.parsed !== null) {
-                                    label += context.parsed + '%';
+                                    // E.g., "Reading: 75.0% days performed"
+                                    label += context.parsed + '% consistency'; 
                                 }
                                 return label;
                             }
@@ -391,14 +488,37 @@ document.addEventListener('DOMContentLoaded', () => {
     //================================================================================
 
     /**
-     * Calculates the longest consecutive streak of completions for a given habit.
-     * @param {object} habit - The habit object.
+     * Calculates the maximum daily completion count for a given habit's completions object.
+     * @param {object} completions - The completions object for an aggregated habit (e.g., { 'YYYY-MM-DD': count }).
+     * @returns {number} The maximum count found on any single day.
+     */
+    function calculateMaxDailyCount(completions) {
+        if (!completions || Object.keys(completions).length === 0) return 0;
+        
+        let maxCount = 0;
+        for (const date in completions) {
+            if (completions[date] > maxCount) {
+                maxCount = completions[date];
+            }
+        }
+        return maxCount;
+    }
+
+
+    /**
+     * Calculates the longest consecutive streak of days a habit was performed (at least once).
+     * @param {object} habit - The habit object (can be an aggregated one with a 'completions' property).
      * @returns {number} The length of the longest streak.
      */
-    function calculateStreak(habit) {
-        if (!habit.completedDates || habit.completedDates.length === 0) return 0;
+    function calculateLongestConsecutiveStreak(habit) { // Renamed from calculateStreak
+        // Streak calculation based on dates where completion count > 0
+        if (!habit.completions || Object.keys(habit.completions).length === 0) return 0;
+
+        // Get all dates where completion count > 0
+        const completedDays = Object.keys(habit.completions).filter(dateStr => habit.completions[dateStr] > 0);
+        if (completedDays.length === 0) return 0;
         
-        const sortedDates = [...habit.completedDates].sort((a, b) => new Date(a) - new Date(b));
+        const sortedDates = completedDays.sort((a, b) => new Date(a) - new Date(b));
         let longestStreak = 0;
         let currentStreak = 0;
         
@@ -435,17 +555,20 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const todayStr = new Date().toISOString().split('T')[0];
-        if (currentHabit.completedDates && currentHabit.completedDates.includes(todayStr)) {
-            alert('Habit already marked complete for today!');
-        } else {
-            if (!currentHabit.completedDates) currentHabit.completedDates = [];
-            currentHabit.completedDates.push(todayStr);
-            // console.log(`Habit "${currentHabit.name}" marked complete for ${todayStr}.`);
-            
-            saveHabits();
-            renderAll(); // Re-render all relevant UI components
+        const currentDate = new Date().toISOString().split('T')[0];
+        
+        // Ensure completions object exists
+        if (!currentHabit.completions) {
+            currentHabit.completions = {};
         }
+
+        // Increment the count for the current date
+        currentHabit.completions[currentDate] = (currentHabit.completions[currentDate] || 0) + 1;
+        
+        console.log(`Habit "${currentHabit.name}" marked complete. Today's count: ${currentHabit.completions[currentDate]}`);
+            
+        saveHabits();
+        renderAll(); // Re-render all relevant UI components
     }
     
     /**
@@ -498,8 +621,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         habits.forEach(habit => {
             if (habit.frequency === 'daily') {
-                const isCompletedToday = habit.completedDates && habit.completedDates.includes(todayStr);
-                if (!isCompletedToday) {
+                // Check based on new completions structure
+                const todayCount = currentHabit.completions && currentHabit.completions[todayStr] ? currentHabit.completions[todayStr] : 0;
+                if (todayCount < currentHabit.targetCount) { // Send reminder if target not met
                     // console.log(`Sending reminder for: ${habit.name}`);
                     new Notification("Habit Reminder", { 
                         body: `Don't forget to complete: ${habit.name}`,
@@ -533,12 +657,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Duplicate name prevention logic removed as per subtask
+
             const newHabit = {
                 id: Date.now(),
-                name: habitName,
+                name: habitName, 
                 frequency: habitFrequency,
                 creationDate: new Date().toISOString(),
-                completedDates: []
+                targetCount: 1,         // New field
+                completions: {}         // New structure, replaces completedDates
             };
             habits.push(newHabit);
             // console.log('New habit added:', newHabit);
@@ -615,4 +742,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Trigger reminders after a delay (e.g., 10 seconds after page load)
     // This is a simple timeout; a real app might use a more sophisticated scheduling mechanism or service worker.
     setTimeout(checkAndSendReminders, 10000); 
+
+    // Event Listener for Clear All Data Button
+    if (clearAllDataBtn) {
+        clearAllDataBtn.addEventListener('click', () => {
+            if (confirm("Are you sure you want to clear all habit data? This action cannot be undone.")) {
+                habits = []; // Reset the global habits array
+                localStorage.removeItem('habits'); // Clear from LocalStorage
+                console.log('All habit data cleared.');
+                renderAll(); // Re-render the entire UI to reflect the empty state
+            } else {
+                // User cancelled, do nothing
+                console.log('Clear all data action cancelled by user.');
+            }
+        });
+    } else {
+        console.error("Clear All Data button not found!");
+    }
 });

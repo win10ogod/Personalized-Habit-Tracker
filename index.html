@@ -33,9 +33,9 @@
                         <option value="weekly">Weekly</option>
                     </select>
                 </div>
-                <input type="submit" value="Add Habit">
+                <input type="submit" value="Add Habit" class="btn btn-primary">
             </form>
-            <button id="request-permission-btn" style="margin-top: 15px;">Enable Reminders</button>
+            <button id="request-permission-btn" class="btn btn-secondary">Enable Reminders</button>
         </section>
         
         <!-- Section for Displaying List of Habits -->
@@ -56,9 +56,9 @@
         <section id="calendar-section">
             <h2>Calendar View</h2>
             <div class="calendar-navigation">
-                <button id="prev-month-btn">Previous Month</button>
+                <button id="prev-month-btn" class="btn btn-secondary">Previous Month</button>
                 <h3 id="month-year-display">Month Year</h3> <!-- Populated by JS -->
-                <button id="next-month-btn">Next Month</button>
+                <button id="next-month-btn" class="btn btn-secondary">Next Month</button>
             </div>
             <div id="calendar-container">
                 <!-- Calendar days will be populated here by JavaScript -->
@@ -75,17 +75,19 @@
         
         <!-- Section for Habit Analysis Charts -->
         <section id="charts-section">
-             <!-- Main container for charts, title is inside -->
             <div id="charts-container">
-                <h2>Habit Analysis</h2> 
-                <div>
+                <h2>Habit Analysis</h2>
+                <div id="streak-chart-wrapper">
                     <h3>Completion Streaks (Longest)</h3>
                     <canvas id="streak-chart"></canvas>
+                    <p class="no-chart-data-message" style="display: none;">No streak data available.</p>
                 </div>
-                <div>
+                <div id="completion-rate-chart-wrapper">
                     <h3>Overall Completion Rates</h3>
                     <canvas id="completion-rate-chart"></canvas>
+                    <p class="no-chart-data-message" style="display: none;">No completion rate data available.</p>
                 </div>
+                <p id="charts-global-error-message" style="display: none;">Charts cannot be displayed or no habits added.</p>
             </div>
         </section>
     </main>

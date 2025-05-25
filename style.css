@@ -1,4 +1,19 @@
 /* ==========================================================================
+   Global Variables (Optional CSS Custom Properties)
+   ========================================================================== */
+:root {
+    --primary-color: #007bff; /* Example: Blue */
+    --secondary-color: #6c757d; /* Example: Gray */
+    --success-color: #28a745; /* Example: Green */
+    --light-bg-color: #f8f9fa;
+    --dark-text-color: #212529;
+    --light-text-color: #ffffff;
+    --border-color: #dee2e6;
+    --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --border-radius: 0.3rem; /* Consistent border radius */
+}
+
+/* ==========================================================================
    Basic CSS Reset/Normalization
    ========================================================================== */
 * {
@@ -8,65 +23,80 @@
 }
 
 html {
-    font-family: sans-serif; /* Use a system font stack for better performance */
-    line-height: 1.15; /* Prevent adjustments of font size after orientation changes in iOS. */
-    -webkit-text-size-adjust: 100%; /* Same as above */
+    font-family: var(--font-family-sans-serif);
+    line-height: 1.15;
+    -webkit-text-size-adjust: 100%;
 }
 
 /* ==========================================================================
    Body Styling
    ========================================================================== */
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
-    line-height: 1.6;
-    margin: 0; /* Ensure no default body margin */
+    font-family: var(--font-family-sans-serif);
+    background-color: #e9ecef; /* Lighter gray for overall background */
+    color: var(--dark-text-color);
+    line-height: 1.65; /* Improved line height for readability */
+    margin: 0;
+    font-size: 16px; /* Base font size */
 }
+
+/* ==========================================================================
+   General Typography & Headings
+   ========================================================================== */
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
+    margin-bottom: 0.75rem; /* Consistent bottom margin for headings */
+    font-weight: 500; /* Semibold for headings */
+    line-height: 1.2;
+}
+
+h1 { font-size: 2.25rem; } /* ~36px */
+h2 { font-size: 1.875rem; } /* ~30px */
+h3 { font-size: 1.5rem; }   /* ~24px */
 
 /* ==========================================================================
    Header Styling
    ========================================================================== */
 header {
-    background-color: #35424a;
-    color: #ffffff;
-    padding: 1.5rem 1rem; /* Responsive padding */
+    background-color: #343a40; /* Darker header */
+    color: var(--light-text-color);
+    padding: 1.5rem 1rem;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 
 header h1 {
-    margin-bottom: 0;
-    font-size: 1.8rem; /* Responsive font size */
+    font-size: 2rem; /* Slightly adjusted */
+    font-weight: 600; /* Bolder for main title */
 }
 
 /* ==========================================================================
    Main Content Styling
    ========================================================================== */
 main {
-    max-width: 960px;
-    margin: 20px auto;
-    padding: 0 20px;
+    max-width: 1000px; /* Slightly wider for modern screens */
+    margin: 30px auto; /* Increased top/bottom margin */
+    padding: 0 15px; /* Reduced side padding slightly */
 }
 
 /* ==========================================================================
    Section Styling
    ========================================================================== */
 section {
-    background-color: #ffffff;
-    margin-bottom: 25px;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px; /* Softer corners */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    background-color: var(--light-text-color); /* White background for sections */
+    margin-bottom: 30px; /* Increased space between sections */
+    padding: 25px; /* Increased padding within sections */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.07); /* Softer, more modern shadow */
 }
 
-section h2 {
-    color: #35424a;
-    margin-bottom: 20px; /* Increased margin for better separation */
-    font-size: 1.5rem;
-    border-bottom: 1px solid #eee; /* Subtle separator for section titles */
-    padding-bottom: 10px;
+section h2 { /* Main title for sections like "My Habits" */
+    color: var(--dark-text-color);
+    font-size: 1.75rem; /* Adjusted */
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px; /* Adjusted */
+    margin-bottom: 25px; /* Adjusted */
 }
 
 /* ==========================================================================
@@ -74,51 +104,112 @@ section h2 {
    ========================================================================== */
 #habit-form-section form label {
     display: block;
-    margin-bottom: 8px; /* Adjusted margin */
-    font-weight: bold;
-    color: #555;
+    margin-bottom: 0.5rem;
+    font-weight: 500; /* Medium weight for labels */
+    color: #495057; /* Darker gray for labels */
 }
 
 #habit-form-section form input[type="text"],
 #habit-form-section form select {
     width: 100%;
-    padding: 12px; /* Increased padding for better touch targets */
-    margin-bottom: 18px; /* Adjusted margin */
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    padding: 0.75rem 1rem; /* Standardized padding */
+    margin-bottom: 1.25rem; /* Increased space */
+    border: 1px solid #ced4da; /* Standard border color */
+    border-radius: var(--border-radius);
     font-size: 1rem;
+    line-height: 1.5;
+    background-color: #fff;
+    background-clip: padding-box;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-#habit-form-section form input[type="submit"],
-#request-permission-btn { /* Style permission button similarly */
-    display: block;
-    width: 100%;
-    background-color: #5cb85c;
-    color: white;
-    padding: 12px 15px;
-    border: none;
-    border-radius: 4px;
+#habit-form-section form input[type="text"]:focus,
+#habit-form-section form select:focus {
+    border-color: var(--primary-color);
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Focus ring */
+}
+
+/* Base Button Styles */
+.btn {
+    display: inline-block;
+    font-weight: 500;
+    color: var(--light-text-color);
+    text-align: center;
+    vertical-align: middle;
     cursor: pointer;
-    font-size: 1.1rem; /* Slightly larger font */
-    transition: background-color 0.3s ease;
+    user-select: none;
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 0.65rem 1.25rem; /* Adjusted padding */
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: var(--border-radius);
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-#habit-form-section form input[type="submit"]:hover,
-#request-permission-btn:hover {
-    background-color: #4cae4c;
+/* Primary Button (Add Habit) */
+.btn-primary {
+    background-color: var(--success-color); /* Green for primary add action */
+    border-color: var(--success-color);
+}
+.btn-primary:hover {
+    background-color: #1e7e34; /* Darker green */
+    border-color: #1c7430;
+}
+.btn-primary:focus-visible { /* For keyboard navigation */
+    outline: 2px solid var(--success-color);
+    outline-offset: 2px;
 }
 
-#request-permission-btn {
-    background-color: #007bff; /* Different color for non-submit button */
-    margin-top: 10px;
+
+/* Utility Button (Enable Reminders, Calendar Nav) */
+.btn-secondary {
+    background-color: var(--primary-color); /* Blue for this */
+    border-color: var(--primary-color);
 }
-#request-permission-btn:hover {
+.btn-secondary:hover {
     background-color: #0056b3;
+    border-color: #004085;
 }
-#request-permission-btn:disabled {
-    background-color: #ccc;
+.btn-secondary:disabled {
+    background-color: #adb5bd; /* Gray for disabled */
+    border-color: #adb5bd;
     cursor: not-allowed;
 }
+
+#habit-form-section form input[type="submit"] { /* Apply primary button style */
+    width: 100%;
+}
+#request-permission-btn { /* Apply secondary button style */
+    width: 100%;
+    margin-top: 0.75rem; /* Consistent margin */
+}
+
+/* Apply .btn and .btn-primary / .btn-secondary to HTML elements for these styles to take effect */
+/* Example for current structure:
+   #habit-form-section form input[type="submit"] will need class="btn btn-primary"
+   #request-permission-btn will need class="btn btn-secondary"
+   Calendar buttons will need class="btn btn-secondary btn-sm" (if smaller size is desired)
+*/
+
+/* For current structure without adding classes to HTML (less ideal but works): */
+#habit-form-section form input[type="submit"] {
+    font-weight: 500; text-align: center; vertical-align: middle; cursor: pointer; user-select: none;
+    border: 1px solid transparent; padding: 0.65rem 1.25rem; font-size: 1rem; line-height: 1.5;
+    border-radius: var(--border-radius); transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    background-color: var(--success-color); border-color: var(--success-color); color: var(--light-text-color); width: 100%;
+}
+#habit-form-section form input[type="submit"]:hover { background-color: #1e7e34; border-color: #1c7430; }
+
+#request-permission-btn {
+    font-weight: 500; text-align: center; vertical-align: middle; cursor: pointer; user-select: none;
+    border: 1px solid transparent; padding: 0.65rem 1.25rem; font-size: 1rem; line-height: 1.5;
+    border-radius: var(--border-radius); transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    background-color: var(--primary-color); border-color: var(--primary-color); color: var(--light-text-color); width: 100%; margin-top: 0.75rem;
+}
+#request-permission-btn:hover { background-color: #0056b3; border-color: #004085; }
+#request-permission-btn:disabled { background-color: #adb5bd; border-color: #adb5bd; cursor: not-allowed; }
 
 
 /* ==========================================================================
@@ -133,41 +224,40 @@ section h2 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 10px;
-    border-bottom: 1px solid #eee;
+    padding: 0.85rem 0.75rem; /* Adjusted padding */
+    border: 1px solid var(--border-color); /* Add border */
+    margin-bottom: -1px; /* For overlapping borders in a list */
+    background-color: #fff;
     transition: background-color 0.2s ease;
 }
+.habit-item:first-child { border-top-left-radius: var(--border-radius); border-top-right-radius: var(--border-radius); }
+.habit-item:last-child { border-bottom-left-radius: var(--border-radius); border-bottom-right-radius: var(--border-radius); margin-bottom: 0; }
 
-.habit-item:last-child {
-    border-bottom: none;
-}
 
 .habit-item span {
     flex-grow: 1;
+    color: #495057;
 }
 
-.habit-item .complete-btn {
-    padding: 8px 12px;
-    background-color: #5cb85c;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    margin-left: 10px;
-    transition: background-color 0.3s ease;
+.habit-item .complete-btn { /* Style for "Mark Complete" */
+    font-weight: 500; text-align: center; vertical-align: middle; cursor: pointer; user-select: none;
+    border: 1px solid var(--success-color); padding: 0.45rem 0.85rem; font-size: 0.875rem; line-height: 1.5;
+    border-radius: var(--border-radius); transition: all 0.15s ease-in-out;
+    background-color: var(--success-color); color: var(--light-text-color); margin-left: 10px;
 }
-
-.habit-item .complete-btn:hover {
-    background-color: #4aa04a;
-}
+.habit-item .complete-btn:hover { background-color: #1e7e34; border-color: #1c7430; }
 
 .habit-item.completed {
-    background-color: #e8f5e9; /* Light green background for completed items */
+    background-color: #f0fdf4; /* Very light green */
+    border-left: 3px solid var(--success-color); /* Accent border */
 }
-
-.habit-item.completed .complete-btn {
-    background-color: #aaa;
+.habit-item.completed span {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+.habit-item.completed .complete-btn { /* Style for "Completed ✔" */
+    background-color: #6c757d; /* Gray */
+    border-color: #6c757d;
     cursor: default;
 }
 
@@ -177,64 +267,66 @@ section h2 {
    ========================================================================== */
 #month-year-display {
     text-align: center;
-    font-size: 1.4rem;
-    color: #35424a;
-    margin-bottom: 15px;
+    font-size: 1.5rem; /* Increased size */
+    color: var(--dark-text-color);
+    margin-bottom: 1rem;
+    font-weight: 500;
 }
 
-#calendar-section .calendar-navigation { /* Assuming buttons are wrapped for layout */
+#calendar-section .calendar-navigation { 
     display: flex;
     justify-content: space-between;
-    margin-bottom: 15px;
+    align-items: center;
+    margin-bottom: 1rem;
 }
 
-#calendar-section button { /* General styling for prev/next month buttons */
-    padding: 8px 15px;
-    background-color: #35424a;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+#calendar-section .calendar-navigation button { /* Prev/Next Month Buttons */
+    font-weight: 500; text-align: center; vertical-align: middle; cursor: pointer; user-select: none;
+    border: 1px solid #6c757d; padding: 0.5rem 1rem; font-size: 0.9rem; line-height: 1.5;
+    border-radius: var(--border-radius); transition: all 0.15s ease-in-out;
+    background-color: #6c757d; color: var(--light-text-color);
 }
-
-#calendar-section button:hover {
-    background-color: #4a5b64;
-}
+#calendar-section .calendar-navigation button:hover { background-color: #545b62; border-color: #545b62; }
 
 #calendar-container {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 5px; /* Gap between day cells */
-    border: 1px solid #eee;
+    gap: 6px; /* Slightly increased gap */
+    border: 1px solid var(--border-color);
     padding: 10px;
-    border-radius: 4px;
+    border-radius: var(--border-radius);
+    background-color: #fdfdff; /* Very light background for calendar itself */
 }
 
 .calendar-day {
-    padding: 10px;
+    padding: 0.75rem 0.25rem; /* Adjusted padding */
     text-align: center;
     background-color: #fff;
-    border: 1px solid #f0f0f0;
-    border-radius: 4px;
-    min-height: 50px; /* Ensure days have some height */
+    border: 1px solid #f1f1f1; /* Lighter border for day cells */
+    border-radius: var(--border-radius);
+    min-height: 60px; /* Increased min-height */
     font-size: 0.9rem;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    display: flex; /* For centering content */
+    align-items: center;
+    justify-content: center;
+}
+.calendar-day:hover:not(.empty) {
+    background-color: #e9ecef;
+    transform: scale(1.05); /* Slight zoom on hover */
 }
 
 .calendar-day.empty {
-    background-color: #f9f9f9;
-    border: 1px solid #f9f9f9;
-}
-
-.calendar-day:not(.empty):hover {
-    background-color: #e9ecef;
+    background-color: var(--light-bg-color);
+    border-color: var(--light-bg-color);
+    visibility: hidden; /* Hide empty cells for cleaner look if preferred */
 }
 
 .calendar-day.day-completed-habit {
-    background-color: #a5d6a7; /* Light green for completed days */
-    color: #1b5e20; /* Darker text for contrast */
+    background-color: #d4edda; /* Bootstrap success light green */
+    color: #155724; /* Bootstrap success dark green */
     font-weight: bold;
+    border: 1px solid #c3e6cb;
 }
 
 
@@ -242,130 +334,161 @@ section h2 {
    Progress Bar Styling
    ========================================================================== */
 .habit-progress-item {
-    margin-bottom: 15px;
+    margin-bottom: 1.25rem; /* Increased space */
 }
 
-.habit-progress-item p {
-    margin-bottom: 5px;
+.habit-progress-item p { /* Habit name above progress bar */
+    margin-bottom: 0.5rem;
     font-weight: 500;
-    color: #444;
+    color: #495057;
 }
 
 .progress-bar-background {
     width: 100%;
-    background-color: #e0e0e0;
-    border-radius: 4px;
-    height: 22px; /* Slightly taller bar */
-    overflow: hidden; /* Ensure fill stays within bounds */
-    position: relative; /* For text positioning */
+    background-color: #e9ecef; /* Lighter background */
+    border-radius: var(--border-radius);
+    height: 24px; /* Slightly taller */
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.075); /* Inner shadow */
 }
 
 .progress-bar-fill {
     height: 100%;
-    background-color: #76c7c0; /* Teal color for progress */
-    border-radius: 4px 0 0 4px; /* Only round left if not full */
-    transition: width 0.5s ease-in-out;
+    background-color: var(--primary-color); /* Consistent primary blue */
+    border-radius: var(--border-radius); /* Fill whole radius if 100% */
+    transition: width 0.4s ease; /* Smoother transition */
     display: flex;
-    align-items: center; /* Center text vertically */
+    align-items: center;
+    justify-content: center; /* Center text if it's short */
 }
+.progress-bar-fill[style="width: 0%;"] {
+    /* No specific style needed for 0% fill with centered text */
+}
+
 
 .progress-percentage {
     font-size: 0.8rem;
-    color: #fff; /* White text for better contrast on fill */
-    padding-left: 8px; /* Padding for text */
-    font-weight: bold;
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.2); /* Subtle shadow for readability */
+    color: var(--light-text-color);
+    font-weight: 600; /* Bolder percentage text */
+    padding: 0 8px; /* Padding around text */
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+    white-space: nowrap; /* Prevent wrapping if bar is too small */
 }
-
-/* If progress is 0, text might not be visible. Consider alternative text placement or min-width for fill */
-.progress-bar-fill[style="width: 0%;"] .progress-percentage {
-    color: #333; /* Dark text if bar is empty */
-    padding-left: 5px; /* Adjust if bar is empty */
+.progress-bar-fill[style*="width: 0%"] .progress-percentage,
+.progress-bar-fill[style*="width: 1%"] .progress-percentage, /* For very small percentages */
+.progress-bar-fill[style*="width: 2%"] .progress-percentage,
+.progress-bar-fill[style*="width: 3%"] .progress-percentage,
+.progress-bar-fill[style*="width: 4%"] .progress-percentage,
+.progress-bar-fill[style*="width: 5%"] .progress-percentage {
+    color: #495057; /* Darker text if bar is too small for white text */
+    text-shadow: none;
 }
 
 
 /* ==========================================================================
    Charts Styling
    ========================================================================== */
-#charts-section h3 {
-    font-size: 1.2rem;
-    color: #35424a;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #f0f0f0;
-    padding-bottom: 5px;
+#charts-section h2 { /* Main "Habit Analysis" title */
+    margin-bottom: 25px;
+}
+#charts-section h3 { /* Individual chart titles */
+    font-size: 1.3rem; /* Adjusted */
+    color: #495057; /* Slightly lighter than section h2 */
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
 }
 
-#charts-container div { /* Each chart container div */
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: #fdfdfd;
-    border: 1px solid #eee;
-    border-radius: 5px;
+#charts-container > div { /* Wrappers: streak-chart-wrapper, completion-rate-chart-wrapper */
+    margin-bottom: 30px; /* Increased space */
+    padding: 25px; /* Increased padding */
+    background-color: #fff; /* White background */
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+    border: 1px solid var(--border-color);
 }
 
 #charts-container canvas {
-    max-width: 100%; /* Ensure canvas is responsive */
-    height: auto !important; /* Override Chart.js inline style for responsiveness if needed */
+    max-width: 100%;
+    height: 300px !important; /* Set a fixed height for consistency, adjust as needed */
 }
+
+#charts-global-error-message {
+    text-align: center;
+    padding: 25px;
+    font-style: italic;
+    color: #6c757d; /* Gray */
+    background-color: var(--light-bg-color);
+    border-radius: var(--border-radius);
+}
+
 
 /* ==========================================================================
    Footer Styling
    ========================================================================== */
 footer {
     text-align: center;
-    padding: 25px 1rem; /* Responsive padding */
+    padding: 2rem 1rem; /* Increased padding */
     font-size: 0.9rem;
-    color: #666;
-    background-color: #e9e9e9;
-    margin-top: 40px; /* Increased margin */
-    border-top: 1px solid #ddd;
+    color: #6c757d;
+    background-color: #f8f9fa; /* Lighter footer */
+    margin-top: 40px;
+    border-top: 1px solid var(--border-color);
 }
 
 /* ==========================================================================
    Utility Classes (Optional)
    ========================================================================== */
-.text-center {
-    text-align: center;
+.text-center { text-align: center; }
+.hidden { display: none; }
+
+/* ==========================================================================
+   Responsive Design Adjustments
+   ========================================================================== */
+@media (max-width: 768px) { /* Tablet and smaller */
+    body { font-size: 15px; }
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+    header { padding: 1rem; }
+    main { margin: 20px auto; }
+    section { padding: 20px; margin-bottom: 20px; }
+    section h2 { font-size: 1.5rem; margin-bottom: 20px; padding-bottom: 10px; }
+
+    #calendar-container { gap: 4px; padding: 8px; }
+    .calendar-day { padding: 0.5rem 0.2rem; min-height: 50px; font-size: 0.85rem; }
+    
+    #charts-section h3 { font-size: 1.15rem; }
+    #charts-container > div { padding: 20px; }
+    #charts-container canvas { height: 250px !important; }
 }
 
-.hidden {
-    display: none;
-}
+@media (max-width: 480px) { /* Mobile */
+    body { font-size: 14px; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.3rem; }
+    h3 { font-size: 1.1rem; }
+    main { padding: 0 10px; margin: 15px auto; }
+    section { padding: 15px; }
+    section h2 { font-size: 1.3rem; margin-bottom: 15px; }
 
-/* Basic Responsive Considerations */
-@media (max-width: 768px) {
-    header h1 {
-        font-size: 1.5rem;
-    }
-    section h2 {
-        font-size: 1.3rem;
-    }
-    #calendar-container {
-        gap: 3px;
-    }
-    .calendar-day {
-        padding: 8px;
-        font-size: 0.8rem;
-        min-height: 40px;
-    }
-}
-
-@media (max-width: 480px) {
-    body {
-        font-size: 15px; /* Adjust base font size for smaller screens */
-    }
-    main {
-        padding: 0 10px;
-    }
     #habit-form-section form input[type="text"],
     #habit-form-section form select,
-    #habit-form-section form input[type="submit"],
-    #request-permission-btn {
-        padding: 10px;
-        font-size: 0.95rem;
+    .btn { /* Affects all buttons styled with .btn or similar structure */
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
     }
-    .habit-item .complete-btn {
-        padding: 6px 10px;
-    }
+    #habit-form-section form label { font-size: 0.95rem; }
+
+    .habit-item { padding: 0.75rem 0.5rem; }
+    .habit-item .complete-btn { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
+
+    #calendar-section .calendar-navigation button { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+    #month-year-display { font-size: 1.2rem; }
+    .calendar-day { padding: 0.4rem 0.1rem; min-height: 40px; font-size: 0.75rem; }
+    
+    #charts-section h3 { font-size: 1.05rem; }
+    #charts-container > div { padding: 15px; }
+    #charts-container canvas { height: 220px !important; }
 }

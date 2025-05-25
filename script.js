@@ -23,6 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const chartsContainer = document.getElementById('charts-container'); // Main container for charts section
     const streakChartCtx = document.getElementById('streak-chart')?.getContext('2d');
     const completionRateChartCtx = document.getElementById('completion-rate-chart')?.getContext('2d');
+    const streakChartWrapper = document.getElementById('streak-chart-wrapper');
+    const completionRateChartWrapper = document.getElementById('completion-rate-chart-wrapper');
+    const chartsGlobalErrorMessage = document.getElementById('charts-global-error-message');
+
 
     //================================================================================
     // State Variables
@@ -30,8 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let habits = []; // Array to store habit objects
     let currentMonth = new Date().getMonth(); // 0-indexed (January is 0)
     let currentYear = new Date().getFullYear();
-    let streakChartInstance = null; // To store Chart.js instance for streak chart
-    let completionRateChartInstance = null; // To store Chart.js instance for completion rate chart
+    let streakChartInstance = null; 
+    let completionRateChartInstance = null; 
 
     // Habit object structure:
     // {
@@ -245,39 +249,60 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function renderCharts() {
         // console.log('Rendering charts...');
-        if (!streakChartCtx || !completionRateChartCtx) {
-            console.warn("Chart canvas contexts not found. Skipping chart rendering.");
-            if (chartsContainer) { // If main charts container exists
-                const h2 = chartsContainer.querySelector('h2'); // Preserve h2 title
-                chartsContainer.innerHTML = ''; // Clear previous content
-                if (h2) chartsContainer.appendChild(h2); // Re-add h2
-                const p = document.createElement('p');
-                p.textContent = habits.length === 0 ? "No habits added yet to display charts." : "Charts cannot be displayed (canvas elements missing or not supported).";
-                chartsContainer.appendChild(p);
-            }
+
+        // Ensure wrapper elements are found
+        if (!streakChartWrapper || !completionRateChartWrapper || !chartsGlobalErrorMessage) {
+            console.error("Chart wrapper elements or global error message element not found. Cannot render charts section.");
+            if (chartsContainer) chartsContainer.style.display = 'none'; // Hide the whole section if critical parts are missing
             return;
         }
         
-        // Destroy previous chart instances to prevent duplicates
-        if (streakChartInstance) streakChartInstance.destroy();
-        if (completionRateChartInstance) completionRateChartInstance.destroy();
+        // Hide all parts initially, then show what's needed
+        streakChartWrapper.style.display = 'none';
+        completionRateChartWrapper.style.display = 'none';
+        chartsGlobalErrorMessage.style.display = 'none';
 
-        if (habits.length === 0) {
-            streakChartCtx.clearRect(0, 0, streakChartCtx.canvas.width, streakChartCtx.canvas.height);
-            completionRateChartCtx.clearRect(0, 0, completionRateChartCtx.canvas.width, completionRateChartCtx.canvas.height);
-            // Message is handled by the check above for missing contexts, or can be added here for specific canvas placeholders
-            console.log("No habits to render charts.");
+        if (!streakChartCtx || !completionRateChartCtx) {
+            console.warn("Chart canvas contexts not found.");
+            chartsGlobalErrorMessage.textContent = "Charts cannot be displayed (canvas issue).";
+            chartsGlobalErrorMessage.style.display = 'block';
             return;
         }
+        
+        // Destroy previous chart instances
+        if (streakChartInstance) {
+            streakChartInstance.destroy();
+            streakChartInstance = null; 
+        }
+        if (completionRateChartInstance) {
+            completionRateChartInstance.destroy();
+            completionRateChartInstance = null;
+        }
+
+        if (habits.length === 0) {
+            // console.log("No habits to render charts.");
+            chartsGlobalErrorMessage.textContent = "No habits added yet to display charts.";
+            chartsGlobalErrorMessage.style.display = 'block';
+            // Canvases are effectively hidden because their wrappers are not shown
+            return;
+        }
+        
+        // If habits are present, show the chart wrappers
+        streakChartWrapper.style.display = 'block';
+        completionRateChartWrapper.style.display = 'block';
 
         const habitNames = habits.map(h => h.name);
-        const backgroundColors = [
-            'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)',
-            'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)'
-        ];
-        const borderColors = [
-            'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'
+        // Define color palettes
+        const streakChartBackgroundColor = 'rgba(54, 162, 235, 0.6)'; // Primary blue
+        const streakChartBorderColor = 'rgba(54, 162, 235, 1)';
+
+        const pieColors = [
+            'rgba(255, 99, 132, 0.7)',  // Red
+            'rgba(54, 162, 235, 0.7)', // Blue
+            'rgba(255, 206, 86, 0.7)', // Yellow
+            'rgba(75, 192, 192, 0.7)', // Green
+            'rgba(153, 102, 255, 0.7)',// Purple
+            'rgba(255, 159, 64, 0.7)'  // Orange
         ];
 
         // Streak Chart (Bar)
@@ -287,14 +312,32 @@ document.addEventListener('DOMContentLoaded', () => {
             data: {
                 labels: habitNames,
                 datasets: [{
-                    label: 'Longest Completion Streak (days)',
+                    // label: 'Longest Completion Streak (days)', // Legend is hidden, so label is not strictly needed
                     data: streakData,
-                    backgroundColor: backgroundColors.slice(0, habits.length),
-                    borderColor: borderColors.slice(0, habits.length),
+                    backgroundColor: streakChartBackgroundColor,
+                    borderColor: streakChartBorderColor,
                     borderWidth: 1
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, suggestedMax: 10 } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        suggestedMax: 10,
+                        title: {
+                            display: true,
+                            text: 'Days'
+                        }
+                    } 
+                },
+                plugins: {
+                    legend: {
+                        display: false // Hide legend as there's only one dataset
+                    }
+                }
+            }
         });
 
         // Completion Rate Chart (Pie)
@@ -311,13 +354,35 @@ document.addEventListener('DOMContentLoaded', () => {
             data: {
                 labels: habitNames,
                 datasets: [{
-                    label: 'Overall Completion Rate (%)',
-                    data: completionRateData.map(rate => parseFloat(rate.toFixed(1))), // Format to one decimal place
-                    backgroundColor: backgroundColors.slice(0, habits.length),
+                    label: 'Overall Completion Rate', // Used in tooltip
+                    data: completionRateData.map(rate => parseFloat(rate.toFixed(1))),
+                    backgroundColor: pieColors, // Apply the defined palette
                     hoverOffset: 4
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top', // Or 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += context.parsed + '%';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
         });
     }
 

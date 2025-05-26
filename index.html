@@ -33,6 +33,14 @@
                         <option value="weekly">Weekly</option>
                     </select>
                 </div>
+                <div>
+                    <label for="habit-target-value">Target Value:</label>
+                    <input type="number" id="habit-target-value" value="1" min="1">
+                </div>
+                <div>
+                    <label for="habit-target-unit">Target Unit:</label>
+                    <select id="habit-target-unit"></select>
+                </div>
                 <input type="submit" value="Add Habit" class="btn btn-primary">
             </form>
             <button id="request-permission-btn" class="btn btn-secondary">Enable Reminders</button>
@@ -40,7 +48,10 @@
         
         <!-- Section for Displaying List of Habits -->
         <section id="habits-list-section">
-            <h2>My Habits</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin-bottom: 0;">My Habits</h2> 
+                <button id="toggle-archived-view-btn" class="btn btn-outline-secondary"></button>
+            </div>
             <ul id="habits-list">
                 <!-- Habit items will be populated here by JavaScript -->
                 <!-- Example: 
@@ -55,9 +66,9 @@
         <!-- Section for Calendar View -->
         <section id="calendar-section">
             <h2>Calendar View</h2>
-            <div class="calendar-navigation">
+            <div class="calendar-navigation" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <button id="prev-month-btn" class="btn btn-secondary">Previous Month</button>
-                <h3 id="month-year-display">Month Year</h3> <!-- Populated by JS -->
+                <h3 id="month-year-display" style="margin-bottom: 0;">Month Year</h3> <!-- Populated by JS -->
                 <button id="next-month-btn" class="btn btn-secondary">Next Month</button>
             </div>
             <div id="calendar-container">

@@ -41,6 +41,25 @@
                     <label for="habit-target-unit">Target Unit:</label>
                     <select id="habit-target-unit"></select>
                 </div>
+                <div>
+                    <label for="habit-reminder-time">Reminder Time:</label>
+                    <input type="time" id="habit-reminder-time" name="habit-reminder-time" value="09:00">
+                </div>
+                <div>
+                    <label for="habit-reminder-recurring">Recurring Reminder:</label>
+                    <select id="habit-reminder-recurring" name="habit-reminder-recurring">
+                        <option value="false" selected>No</option>
+                        <option value="true">Yes</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="habit-reminder-sound">Reminder Sound:</label>
+                    <select id="habit-reminder-sound" name="habit-reminder-sound">
+                        <option value="default">Default Sound</option>
+                        <option value="bell.mp3">Bell</option>
+                        <option value="chime.mp3">Chime</option>
+                    </select>
+                </div>
                 <input type="submit" value="Add Habit" class="btn btn-primary">
             </form>
             <button id="request-permission-btn" class="btn btn-secondary">Enable Reminders</button>

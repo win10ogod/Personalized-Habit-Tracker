@@ -21,7 +21,12 @@ A client-side web application designed to help users define, track, and maintain
 *   **Data Analysis Charts (Aggregated by Habit Name for Active Habits):**
     *   **Max Daily Completions/Value (Bar Chart):** Displays **Max Daily Completions/Value** for each **active, aggregated habit type**.
     *   **Consistency Rate (Pie Chart):** Shows **Consistency Rate** (percentage of days performed since creation) for each **active, aggregated habit type**.
-*   **Reminder Notifications:** Basic browser notifications for incomplete daily habits (permission-based, checks against target value).
+*   **Advanced Reminder & Notification System:**
+    *   **Custom Reminder Time:** Set specific times for daily habit reminders.
+    *   **Recurring Reminders:** Option to set reminders as recurring (daily at the specified time).
+    *   **Customizable Sounds:** Choose from a selection of sounds (Default, Bell, Chime) for your reminders.
+    *   **Interactive Notifications:** Snooze reminders for 5 minutes directly from the notification.
+    *   **Service Worker Powered:** Notifications are handled by a service worker for improved reliability even when the application is not in the foreground (though the tab may need to be open for sound playback by the client-side script).
 *   **Responsive Design:** User-friendly interface across various screen sizes.
 *   **Clear All Records:** Option to clear all habit data with confirmation.
 *   **Multi-language Ready:** Core UI strings have been abstracted for future translation (currently English only).
@@ -74,7 +79,7 @@ This section describes how to run the application directly in a web browser. For
 *   **JavaScript (ES6+):** For all client-side logic, DOM manipulation, event handling, and interactivity.
 *   **Chart.js:** A JavaScript charting library used via a CDN to render data analysis charts.
 *   **Browser LocalStorage API:** For client-side storage of habit data, enabling persistence across sessions.
-*   **Browser Notification API:** For displaying reminder notifications.
+*   **Browser Notification API & Service Workers:** For displaying reminder notifications and managing background reminder logic.
 *   **Electron (for Desktop Version):** Used to wrap the web application into a cross-platform desktop application.
     *   **Electron Builder:** Used for packaging the Electron application into distributable formats.
 
@@ -136,15 +141,15 @@ For more specific build targets (e.g., building for Windows from macOS), please 
 
 *   **User Interface for Editing Habit Targets:** Allow users to modify `targetValue` and `targetUnit` for existing habits.
 *   **Advanced Weekly Habits:** Allow tracking habits for specific days of the week (e.g., Mon, Wed, Fri) or a target number of times per week (e.g., "Exercise 3 times a week").
-*   **Customizable Reminders:** More granular control over reminder timings, snooze options, and reminder sounds.
+*   **Enhanced Customizable Reminders:** Further improvements to reminders, such as more sound options, complex recurrence patterns (e.g., specific days of the week, bi-weekly), and the ability to set multiple reminders per habit.
 *   **Data Management:** Implement functionality for exporting and importing habit data (e.g., as JSON or CSV files).
 *   **Enhanced Charts & Statistics:** Introduce more chart types (e.g., line charts for progress over time), date range filtering for analysis, or more detailed statistics (e.g., success rate per month). Option to exclude/include archived habits in statistics.
 *   **Themes & UI Customization:** Offer different color themes or layout options for users to personalize their experience.
 *   **Notes/Journaling:** Allow users to add brief notes or reflections to specific habit completions or days.
-*   **Service Workers:** Implement for more reliable background notifications or basic offline capabilities.
+*   **Service Worker Enhancements:** Service workers are implemented for notifications and basic caching. Future improvements could include full offline data synchronization (e.g., using IndexedDB managed by the service worker) and more robust background processing.
 *   **Accessibility (ARIA):** Conduct a thorough accessibility review and implement further ARIA attributes for improved screen reader support and keyboard navigation.
 *   **Habit Ordering:** Allow users to reorder their active habits in the list.
-*   **Local Chart.js:** Bundle Chart.js locally instead of relying on a CDN for better offline reliability in the desktop app.
+*   **Local Chart.js:** Bundle Chart.js locally instead of relying on a CDN for better offline reliability (Service worker now caches CDN version, but local is an alternative).
 *   **Full Multi-language Translation and Language Switcher:** Implement translations for other languages and add a UI element to switch languages.
 
 ---

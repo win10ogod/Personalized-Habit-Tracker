@@ -132,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     //================================================================================
     // State Variables
     //================================================================================
+    // TEST_CASE_POINT: Habit data structure should include reminderTime, reminderRecurring, reminderSound, reminderSnoozeUntil.
     let habits = []; // Array to store habit objects
     let currentMonth = new Date().getMonth(); // 0-indexed (January is 0)
     let currentYear = new Date().getFullYear();
@@ -153,7 +154,11 @@ document.addEventListener('DOMContentLoaded', () => {
     //       totalValue: Y  // Sum of logged values (e.g., total hours, total km)
     //     } 
     //   },
-    //   isArchived: false
+    //   isArchived: false,
+    //   reminderTime: "09:00", // Default reminder time
+    //   reminderRecurring: false, // Default recurring status
+    //   reminderSound: "default", // Default sound
+    //   reminderSnoozeUntil: null // Timestamp for snoozed reminder
     // }
 
     //================================================================================
@@ -923,33 +928,87 @@ function renderProgressBars() {
      * Checks for incomplete daily habits and sends notifications if permission is granted.
      */
     function checkAndSendReminders() {
+        // TEST_POINT: Manually test reminder triggering by setting system time close to a habit's reminderTime.
+        // TEST_POINT: To unit test reminder logic, consider extracting core time comparison and completion check into a separate, pure function.
         if (Notification.permission !== 'granted') {
             // console.log('Notification permission not granted. Cannot send reminders.');
             return;
         }
 
-        const todayStr = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
         let remindersSent = 0;
 
         habits.forEach(habit => {
-            if (habit.frequency === 'daily') {
-                // Check based on new completions structure
-                const todayCount = currentHabit.completions && currentHabit.completions[todayStr] ? currentHabit.completions[todayStr] : 0;
-                if (todayCount < currentHabit.targetCount) { // Send reminder if target not met
-                    // console.log(`Sending reminder for: ${habit.name}`);
-                    new Notification("Habit Reminder", { 
-                        body: `Don't forget to complete: ${habit.name}`,
-                        // icon: './icon.png' // Optional: Ensure icon.png exists in the root
-                    });
-                    remindersSent++;
+            // Only consider active, daily habits with a reminderTime set
+            if (habit.isArchived || habit.frequency !== 'daily' || !habit.reminderTime) {
+                return;
+            }
+
+            // Check for snoozed reminder
+            if (habit.reminderSnoozeUntil && now < new Date(habit.reminderSnoozeUntil)) {
+                console.log(`Reminder for habit "${habit.name}" is snoozed until ${new Date(habit.reminderSnoozeUntil).toLocaleTimeString()}.`);
+                return;
+            }
+
+            const [reminderHour, reminderMinute] = habit.reminderTime.split(':').map(Number);
+
+            // Check if it's time for the reminder (ignoring seconds)
+            if (currentHour === reminderHour && currentMinute === reminderMinute) {
+                const todayProgress = (habit.completions && habit.completions[todayStr]) ? 
+                                      habit.completions[todayStr] : 
+                                      { count: 0, totalValue: 0 };
+                
+                let isCompletedToday = false;
+                if (habit.targetUnit === 'times') {
+                    isCompletedToday = todayProgress.count >= habit.targetValue;
+                } else {
+                    isCompletedToday = todayProgress.totalValue >= habit.targetValue;
+                }
+
+                if (!isCompletedToday) {
+                    console.log(`Attempting to send reminder for: ${habit.name} via Service Worker.`);
+                    if (navigator.serviceWorker.controller && navigator.serviceWorker.ready) {
+                        navigator.serviceWorker.ready.then(registration => {
+                            registration.active.postMessage({
+                                type: 'SHOW_NOTIFICATION', // Added type for sw.js to identify message
+                                payload: {
+                                    title: 'Habit Reminder',
+                                    body: `Don't forget to complete: ${habit.name}`,
+                                    habitId: habit.id,
+                                    reminderSound: habit.reminderSound // Pass reminderSound
+                                }
+                            });
+                            console.log(`Message sent to Service Worker for habit: ${habit.name} with sound: ${habit.reminderSound}`);
+                            remindersSent++;
+                        }).catch(err => {
+                             console.error('Service Worker not ready or error sending message:', err);
+                             // Fallback or error handling if SW messaging fails
+                        });
+                    } else {
+                        console.warn('Service Worker not controlling the page. Cannot send message for notification.');
+                        // Potentially fall back to new Notification() if SW is not active,
+                        // but for this task, we are migrating fully to SW for notifications.
+                    }
+
+                    // If reminder is not recurring, clear reminderTime after sending once (or implement snooze logic)
+                    if (!habit.reminderRecurring) {
+                        // For now, let's just log this. Actual snooze/clearing logic will be more complex.
+                        console.log(`Non-recurring reminder for "${habit.name}" was sent. Consider UI for snooze/clear.`);
+                        // To prevent re-sending immediately, one might set reminderSnoozeUntil for a day or clear reminderTime
+                        // habit.reminderTime = null; // Example: clear it
+                        // saveHabits(); // If changes are made to habit object
+                    }
                 }
             }
         });
 
         if (remindersSent > 0) {
-            console.log(`${remindersSent} reminders sent.`);
+            console.log(`${remindersSent} reminders sent at ${now.toLocaleTimeString()}.`);
         } else {
-            // console.log('No reminders needed or all daily habits completed.');
+            // console.log(`No reminders needed at ${now.toLocaleTimeString()} or all relevant daily habits completed/snoozed.`);
         }
     }
 
@@ -974,6 +1033,12 @@ function renderProgressBars() {
             const targetValue = parseInt(targetValueInputEl.value, 10) || 1;
             const targetUnit = targetUnitInputEl.value || TARGET_UNITS[0];
 
+            // Retrieve values from new reminder fields
+            const reminderTime = document.getElementById('habit-reminder-time').value || "09:00";
+            const reminderRecurring = document.getElementById('habit-reminder-recurring').value === "true";
+            const reminderSound = document.getElementById('habit-reminder-sound').value || "default";
+
+            // TEST_CASE_POINT: Ensure new habit correctly saves reminderTime, reminderRecurring, reminderSound from form.
             const newHabit = {
                 id: Date.now(),
                 name: habitName, 
@@ -982,7 +1047,11 @@ function renderProgressBars() {
                 targetValue: targetValue,
                 targetUnit: targetUnit,
                 completions: {},
-                isArchived: false // New habits are active by default
+                isArchived: false, // New habits are active by default
+                reminderTime: reminderTime,
+                reminderRecurring: reminderRecurring,
+                reminderSound: reminderSound,
+                reminderSnoozeUntil: null // Initialize snooze time to null
             };
             habits.push(newHabit);
             // console.log('New habit added:', newHabit);
@@ -992,6 +1061,10 @@ function renderProgressBars() {
             habitNameInput.value = ''; // Clear input field
             targetValueInputEl.value = '1'; // Reset to default
             targetUnitInputEl.value = TARGET_UNITS[0]; // Reset to default
+            // Reset new reminder fields
+            document.getElementById('habit-reminder-time').value = "09:00";
+            document.getElementById('habit-reminder-recurring').value = "false";
+            document.getElementById('habit-reminder-sound').value = "default";
         });
     } else {
         console.error("Habit form element not found!");
@@ -1070,9 +1143,55 @@ function renderProgressBars() {
     updateStaticUIText(); // Call to set initial static text
     renderAll(); // Initial render of all UI components
     
-    // Trigger reminders after a delay (e.g., 10 seconds after page load)
-    // This is a simple timeout; a real app might use a more sophisticated scheduling mechanism or service worker.
-    setTimeout(checkAndSendReminders, 10000); 
+    // Trigger reminders every minute
+    // This is a simple interval; a real app might use a more sophisticated scheduling mechanism or service worker.
+    setInterval(checkAndSendReminders, 60000); 
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => { // Register after page loaded to not delay rendering
+            navigator.serviceWorker.register('./sw.js')
+                .then(registration => {
+                    console.log('Service Worker registered successfully:', registration);
+                })
+                .catch(error => {
+                    console.log('Service Worker registration failed:', error);
+                });
+        });
+
+        // Listen for messages from the Service Worker (e.g., for snooze updates)
+        navigator.serviceWorker.addEventListener('message', event => {
+            console.log('Client: Message received from SW:', event.data);
+            if (event.data && event.data.type === 'SNOOZE_HABIT') {
+                const { habitId, snoozeUntil } = event.data;
+                // TEST_CASE_POINT: Verify habit.reminderSnoozeUntil is updated correctly when 'SNOOZE_HABIT' message received.
+                const habitIndex = habits.findIndex(h => h.id === habitId);
+                if (habitIndex > -1) {
+                    habits[habitIndex].reminderSnoozeUntil = snoozeUntil;
+                    saveHabits();
+                    console.log(`Client: Habit with ID ${habitId} snoozed until ${new Date(snoozeUntil).toLocaleTimeString()}`);
+                    // Optionally re-render or provide some UI feedback
+                    // renderHabits(); 
+                } else {
+                    console.warn(`Client: Habit with ID ${habitId} not found for snoozing.`);
+                }
+            } else if (event.data && event.data.type === 'PLAY_SOUND' && event.data.soundFile) {
+                // TEST_CASE_POINT: Verify correct sound file is played when 'PLAY_SOUND' message received.
+                console.log(`Client: Received PLAY_SOUND message for ${event.data.soundFile}`);
+                try {
+                    // Ensure the path is correct, assuming 'sounds/' is at the root
+                    const audio = new Audio('sounds/' + event.data.soundFile);
+                    audio.play()
+                        .then(() => console.log(`Client: Playing sound ${event.data.soundFile}`))
+                        .catch(error => console.error(`Client: Error playing sound ${event.data.soundFile}:`, error));
+                } catch (error) {
+                    console.error(`Client: General error attempting to play sound ${event.data.soundFile}:`, error);
+                }
+            }
+        });
+    } else {
+        console.log('Service Worker is not supported by this browser.');
+    }
 
     // Event Listener for Toggle Archived View Button
     if (toggleArchivedViewBtn) {

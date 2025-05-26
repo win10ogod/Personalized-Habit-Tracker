@@ -57,6 +57,9 @@ const uiStrings = {
         markCompleteButtonText: "Mark Complete",
         completedButtonWithCount: "Completed ({count})",
         logProgressButton: "Log {unit}", // e.g. "Log Hours"
+        // Units for progress display
+        timeSingular: "time",
+        timesPlural: "times",
         // Archiving
         toggleArchivedViewButtonViewArchived: "View Archived",
         toggleArchivedViewButtonViewActive: "View Active Habits",
@@ -385,9 +388,23 @@ document.addEventListener('DOMContentLoaded', () => {
             percentageText.className = 'progress-percentage';
 
             if (habit.frequency === 'daily') {
-                const todayCount = completions[todayStr] || 0;
-                progressPercent = Math.min((todayCount / targetCount) * 100, 100);
-                percentageText.textContent = `${todayCount}/${targetCount} completion${targetCount !== 1 ? 's' : ''}`;
+                const currentDayProgress = completions[todayStr] || { count: 0, totalValue: 0 };
+                const actualTargetValue = habit.targetValue || 1; // Use habit.targetValue here
+                let displayValue;
+                let unitText;
+
+                if (habit.targetUnit === 'times') {
+                    displayValue = currentDayProgress.count;
+                    // Use singular "time" if actual count is 1, plural "times" otherwise.
+                    unitText = displayValue === 1 ? t('timeSingular') : t('timesPlural');
+                } else {
+                    displayValue = currentDayProgress.totalValue;
+                    unitText = habit.targetUnit; // Use the specific unit like "km", "pages"
+                }
+                
+                progressPercent = Math.min((displayValue / actualTargetValue) * 100, 100);
+                percentageText.textContent = `${displayValue}/${actualTargetValue} ${unitText}`;
+
             } else if (habit.frequency === 'weekly') {
                 let daysCompletedInWeek = 0;
                 const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
@@ -403,7 +420,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const dayInWeek = new Date(currentMonday);
                     dayInWeek.setDate(currentMonday.getDate() + i);
                     const dateInWeekStr = dayInWeek.toISOString().split('T')[0];
-                    if (completions[dateInWeekStr] && completions[dateInWeekStr] > 0) {
+                    // Corrected condition: check count property of the completion object
+                    if (completions[dateInWeekStr] && completions[dateInWeekStr].count > 0) {
                         daysCompletedInWeek++;
                     }
                 }

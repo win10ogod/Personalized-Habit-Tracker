@@ -6,6 +6,8 @@
     --secondary-color: #6c757d; /* Example: Gray */
     --success-color: #28a745; /* Example: Green */
     --danger-color: #dc3545; /* Example: Red */
+    --warning-color: #ffc107; /* Example: Yellow */
+    --info-color: #17a2b8;    /* Example: Teal/Cyan */
     --light-bg-color: #f8f9fa;
     --dark-text-color: #212529;
     --light-text-color: #ffffff;
@@ -135,7 +137,7 @@ section h2 { /* Main title for sections like "My Habits" */
 .btn {
     display: inline-block;
     font-weight: 500;
-    color: var(--light-text-color);
+    color: var(--dark-text-color); /* Default text color for non-solid buttons */
     text-align: center;
     vertical-align: middle;
     cursor: pointer;
@@ -148,27 +150,29 @@ section h2 { /* Main title for sections like "My Habits" */
     border-radius: var(--border-radius);
     transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
+.btn:hover {
+    text-decoration: none;
+}
+.btn:focus, .btn.focus {
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Generic focus ring, can be customized per button type */
+}
 
 /* Primary Button (Add Habit) */
 .btn-primary {
-    background-color: var(--success-color); /* Green for primary add action */
+    background-color: var(--success-color); 
     border-color: var(--success-color);
     color: var(--light-text-color);
 }
 .btn-primary:hover {
-    background-color: #1e7e34; /* Darker green */
+    background-color: #1e7e34; 
     border-color: #1c7430;
     color: var(--light-text-color);
 }
-.btn-primary:focus-visible { /* For keyboard navigation */
-    outline: 2px solid var(--success-color);
-    outline-offset: 2px;
-}
 
-
-/* Utility Button (Enable Reminders, Calendar Nav) */
+/* Secondary Button (Enable Reminders, Calendar Nav) */
 .btn-secondary {
-    background-color: var(--primary-color); /* Blue for this */
+    background-color: var(--primary-color); 
     border-color: var(--primary-color);
     color: var(--light-text-color);
 }
@@ -178,7 +182,7 @@ section h2 { /* Main title for sections like "My Habits" */
     color: var(--light-text-color);
 }
 .btn-secondary:disabled {
-    background-color: #adb5bd; /* Gray for disabled */
+    background-color: #adb5bd; 
     border-color: #adb5bd;
     cursor: not-allowed;
 }
@@ -190,43 +194,78 @@ section h2 { /* Main title for sections like "My Habits" */
     color: var(--light-text-color);
 }
 .btn-danger:hover {
-    background-color: #c82333; /* Darker red */
+    background-color: #c82333; 
     border-color: #bd2130;
     color: var(--light-text-color);
 }
 
+/* Warning Button (Archive) */
+.btn-warning {
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+    color: var(--dark-text-color); /* Yellow often needs dark text */
+}
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: var(--dark-text-color);
+}
 
-#habit-form-section form input[type="submit"] { /* Apply primary button style */
+/* Info Button (Restore) */
+.btn-info {
+    background-color: var(--info-color);
+    border-color: var(--info-color);
+    color: var(--light-text-color);
+}
+.btn-info:hover {
+    background-color: #117a8b;
+    border-color: #10707f;
+    color: var(--light-text-color);
+}
+
+/* Outline Secondary Button (Toggle Archived View) */
+.btn-outline-secondary {
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+.btn-outline-secondary:hover {
+    color: var(--light-text-color);
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* Small Button Modifier */
+.btn-sm {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: calc(var(--border-radius) - 0.05rem);
+}
+
+
+#habit-form-section form input[type="submit"] { 
     width: 100%;
 }
-#request-permission-btn { /* Apply secondary button style */
+#request-permission-btn { 
     width: 100%;
-    margin-top: 0.75rem; /* Consistent margin */
+    margin-top: 0.75rem; 
 }
-
-/* For current structure without adding classes to HTML (less ideal but works): */
-/* These will be overridden by the classes added in index.html */
-#habit-form-section form input[type="submit"] {
-    font-weight: 500; text-align: center; vertical-align: middle; cursor: pointer; user-select: none;
-    border: 1px solid transparent; padding: 0.65rem 1.25rem; font-size: 1rem; line-height: 1.5;
-    border-radius: var(--border-radius); transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    background-color: var(--success-color); border-color: var(--success-color); color: var(--light-text-color); width: 100%;
-}
-#habit-form-section form input[type="submit"]:hover { background-color: #1e7e34; border-color: #1c7430; }
-
-#request-permission-btn {
-    font-weight: 500; text-align: center; vertical-align: middle; cursor: pointer; user-select: none;
-    border: 1px solid transparent; padding: 0.65rem 1.25rem; font-size: 1rem; line-height: 1.5;
-    border-radius: var(--border-radius); transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    background-color: var(--primary-color); border-color: var(--primary-color); color: var(--light-text-color); width: 100%; margin-top: 0.75rem;
-}
-#request-permission-btn:hover { background-color: #0056b3; border-color: #004085; }
-#request-permission-btn:disabled { background-color: #adb5bd; border-color: #adb5bd; cursor: not-allowed; }
 
 
 /* ==========================================================================
    Habits List Styling
    ========================================================================== */
+#habits-list-section .flex-header { /* For the h2 and toggle button */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem; /* Default h2 margin-bottom is 0.75rem, section h2 margin-bottom is 25px */
+}
+#habits-list-section .flex-header h2 {
+    margin-bottom: 0; /* Override default h2 margin */
+}
+
+
 #habits-list {
     list-style: none;
     padding: 0;
@@ -236,9 +275,9 @@ section h2 { /* Main title for sections like "My Habits" */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.85rem 0.75rem; /* Adjusted padding */
-    border: 1px solid var(--border-color); /* Add border */
-    margin-bottom: -1px; /* For overlapping borders in a list */
+    padding: 0.85rem 0.75rem; 
+    border: 1px solid var(--border-color); 
+    margin-bottom: -1px; 
     background-color: #fff;
     transition: background-color 0.2s ease;
 }
@@ -249,28 +288,40 @@ section h2 { /* Main title for sections like "My Habits" */
 .habit-item span {
     flex-grow: 1;
     color: #495057;
+    margin-right: 10px; /* Space before action buttons */
 }
 
-.habit-item .complete-btn { /* Style for "Mark Complete" */
-    font-weight: 500; text-align: center; vertical-align: middle; cursor: pointer; user-select: none;
-    border: 1px solid var(--success-color); padding: 0.45rem 0.85rem; font-size: 0.875rem; line-height: 1.5;
-    border-radius: var(--border-radius); transition: all 0.15s ease-in-out;
-    background-color: var(--success-color); color: var(--light-text-color); margin-left: 10px;
+.habit-actions { /* Container for complete/archive/restore buttons */
+    display: flex;
+    gap: 0.5rem; /* Space between buttons */
 }
-.habit-item .complete-btn:hover { background-color: #1e7e34; border-color: #1c7430; }
+
+.habit-item .complete-btn { /* Style for "Mark Complete" / "Log Unit" */
+    /* Base .btn and .btn-sm styles are applied in JS */
+    /* Specific color comes from .btn-success in JS */
+}
 
 .habit-item.completed {
-    background-color: #f0fdf4; /* Very light green */
-    border-left: 3px solid var(--success-color); /* Accent border */
+    background-color: #f0fdf4; 
+    border-left: 3px solid var(--success-color); 
 }
 .habit-item.completed span {
-    text-decoration: line-through;
+    /* text-decoration: line-through; */ /* Optional: removed for cleaner look with counts */
     color: #6c757d;
 }
-.habit-item.completed .complete-btn { /* Style for "Completed ✔" */
-    background-color: #6c757d; /* Gray */
-    border-color: #6c757d;
-    cursor: default;
+.habit-item.completed .complete-btn { 
+    /* Visual change for completed "times" habits can be subtle if count is shown */
+    /* background-color: #6c757d; 
+    border-color: #6c757d; */
+}
+
+.habit-item.archived-item {
+    background-color: #f8f9fa; /* Light gray for archived items */
+    opacity: 0.75;
+}
+.habit-item.archived-item span {
+    text-decoration: line-through;
+    font-style: italic;
 }
 
 
@@ -279,7 +330,7 @@ section h2 { /* Main title for sections like "My Habits" */
    ========================================================================== */
 #month-year-display {
     text-align: center;
-    font-size: 1.5rem; /* Increased size */
+    font-size: 1.5rem; 
     color: var(--dark-text-color);
     margin-bottom: 1rem;
     font-weight: 500;
@@ -291,52 +342,52 @@ section h2 { /* Main title for sections like "My Habits" */
     align-items: center;
     margin-bottom: 1rem;
 }
+#calendar-section .calendar-navigation h3 { /* Month display in calendar nav */
+    margin-bottom: 0; /* Override default */
+}
+
 
 #calendar-section .calendar-navigation button { /* Prev/Next Month Buttons */
-    font-weight: 500; text-align: center; vertical-align: middle; cursor: pointer; user-select: none;
-    border: 1px solid #6c757d; padding: 0.5rem 1rem; font-size: 0.9rem; line-height: 1.5;
-    border-radius: var(--border-radius); transition: all 0.15s ease-in-out;
-    background-color: #6c757d; color: var(--light-text-color);
+    /* Classes .btn .btn-secondary are applied in HTML */
 }
-#calendar-section .calendar-navigation button:hover { background-color: #545b62; border-color: #545b62; }
 
 #calendar-container {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px; /* Slightly increased gap */
+    gap: 6px; 
     border: 1px solid var(--border-color);
     padding: 10px;
     border-radius: var(--border-radius);
-    background-color: #fdfdff; /* Very light background for calendar itself */
+    background-color: #fdfdff; 
 }
 
 .calendar-day {
-    padding: 0.75rem 0.25rem; /* Adjusted padding */
+    padding: 0.75rem 0.25rem; 
     text-align: center;
     background-color: #fff;
-    border: 1px solid #f1f1f1; /* Lighter border for day cells */
+    border: 1px solid #f1f1f1; 
     border-radius: var(--border-radius);
-    min-height: 60px; /* Increased min-height */
+    min-height: 60px; 
     font-size: 0.9rem;
     transition: background-color 0.2s ease, transform 0.1s ease;
-    display: flex; /* For centering content */
+    display: flex; 
     align-items: center;
     justify-content: center;
 }
 .calendar-day:hover:not(.empty) {
     background-color: #e9ecef;
-    transform: scale(1.05); /* Slight zoom on hover */
+    transform: scale(1.05); 
 }
 
 .calendar-day.empty {
     background-color: var(--light-bg-color);
     border-color: var(--light-bg-color);
-    visibility: hidden; /* Hide empty cells for cleaner look if preferred */
+    visibility: hidden; 
 }
 
 .calendar-day.day-completed-habit {
-    background-color: #d4edda; /* Bootstrap success light green */
-    color: #155724; /* Bootstrap success dark green */
+    background-color: #d4edda; 
+    color: #155724; 
     font-weight: bold;
     border: 1px solid #c3e6cb;
 }
@@ -346,10 +397,10 @@ section h2 { /* Main title for sections like "My Habits" */
    Progress Bar Styling
    ========================================================================== */
 .habit-progress-item {
-    margin-bottom: 1.25rem; /* Increased space */
+    margin-bottom: 1.25rem; 
 }
 
-.habit-progress-item p { /* Habit name above progress bar */
+.habit-progress-item p { 
     margin-bottom: 0.5rem;
     font-weight: 500;
     color: #495057;
@@ -357,22 +408,22 @@ section h2 { /* Main title for sections like "My Habits" */
 
 .progress-bar-background {
     width: 100%;
-    background-color: #e9ecef; /* Lighter background */
+    background-color: #e9ecef; 
     border-radius: var(--border-radius);
-    height: 24px; /* Slightly taller */
+    height: 24px; 
     overflow: hidden;
     position: relative;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.075); /* Inner shadow */
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.075); 
 }
 
 .progress-bar-fill {
     height: 100%;
-    background-color: var(--primary-color); /* Consistent primary blue */
-    border-radius: var(--border-radius); /* Fill whole radius if 100% */
-    transition: width 0.4s ease; /* Smoother transition */
+    background-color: var(--primary-color); 
+    border-radius: var(--border-radius); 
+    transition: width 0.4s ease; 
     display: flex;
     align-items: center;
-    justify-content: center; /* Center text if it's short */
+    justify-content: center; 
 }
 .progress-bar-fill[style="width: 0%;"] {
     /* No specific style needed for 0% fill with centered text */
@@ -382,18 +433,18 @@ section h2 { /* Main title for sections like "My Habits" */
 .progress-percentage {
     font-size: 0.8rem;
     color: var(--light-text-color);
-    font-weight: 600; /* Bolder percentage text */
-    padding: 0 8px; /* Padding around text */
+    font-weight: 600; 
+    padding: 0 8px; 
     text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
-    white-space: nowrap; /* Prevent wrapping if bar is too small */
+    white-space: nowrap; 
 }
 .progress-bar-fill[style*="width: 0%"] .progress-percentage,
-.progress-bar-fill[style*="width: 1%"] .progress-percentage, /* For very small percentages */
+.progress-bar-fill[style*="width: 1%"] .progress-percentage, 
 .progress-bar-fill[style*="width: 2%"] .progress-percentage,
 .progress-bar-fill[style*="width: 3%"] .progress-percentage,
 .progress-bar-fill[style*="width: 4%"] .progress-percentage,
 .progress-bar-fill[style*="width: 5%"] .progress-percentage {
-    color: #495057; /* Darker text if bar is too small for white text */
+    color: #495057; 
     text-shadow: none;
 }
 
@@ -401,21 +452,21 @@ section h2 { /* Main title for sections like "My Habits" */
 /* ==========================================================================
    Charts Styling
    ========================================================================== */
-#charts-section h2 { /* Main "Habit Analysis" title */
+#charts-section h2 { 
     margin-bottom: 25px;
 }
-#charts-section h3 { /* Individual chart titles */
-    font-size: 1.3rem; /* Adjusted */
-    color: #495057; /* Slightly lighter than section h2 */
+#charts-section h3 { 
+    font-size: 1.3rem; 
+    color: #495057; 
     margin-top: 1rem;
     margin-bottom: 1rem;
     text-align: center;
 }
 
-#charts-container > div { /* Wrappers: streak-chart-wrapper, completion-rate-chart-wrapper */
-    margin-bottom: 30px; /* Increased space */
-    padding: 25px; /* Increased padding */
-    background-color: #fff; /* White background */
+#charts-container > div { 
+    margin-bottom: 30px; 
+    padding: 25px; 
+    background-color: #fff; 
     border-radius: var(--border-radius);
     box-shadow: 0 2px 6px rgba(0,0,0,0.07);
     border: 1px solid var(--border-color);
@@ -423,14 +474,14 @@ section h2 { /* Main title for sections like "My Habits" */
 
 #charts-container canvas {
     max-width: 100%;
-    height: 300px !important; /* Set a fixed height for consistency, adjust as needed */
+    height: 300px !important; 
 }
 
 #charts-global-error-message {
     text-align: center;
     padding: 25px;
     font-style: italic;
-    color: #6c757d; /* Gray */
+    color: #6c757d; 
     background-color: var(--light-bg-color);
     border-radius: var(--border-radius);
 }
@@ -441,10 +492,10 @@ section h2 { /* Main title for sections like "My Habits" */
    ========================================================================== */
 footer {
     text-align: center;
-    padding: 2rem 1rem; /* Increased padding */
+    padding: 2rem 1rem; 
     font-size: 0.9rem;
     color: #6c757d;
-    background-color: #f8f9fa; /* Lighter footer */
+    background-color: #f8f9fa; 
     margin-top: 40px;
     border-top: 1px solid var(--border-color);
 }
@@ -474,6 +525,18 @@ footer {
     #charts-section h3 { font-size: 1.15rem; }
     #charts-container > div { padding: 20px; }
     #charts-container canvas { height: 250px !important; }
+
+    .habit-actions {
+        flex-direction: column; /* Stack buttons vertically on small screens */
+        align-items: flex-end; /* Align to the right */
+        gap: 0.3rem;
+    }
+    .habit-item .complete-btn, 
+    .habit-item .archive-btn, 
+    .habit-item .restore-btn {
+        width: 100%; /* Make action buttons full width of their container */
+        margin-left: 0; /* Remove margin-left for stacked buttons */
+    }
 }
 
 @media (max-width: 480px) { /* Mobile */
@@ -493,7 +556,14 @@ footer {
     }
     #habit-form-section form label { font-size: 0.95rem; }
 
-    .habit-item { padding: 0.75rem 0.5rem; }
+    .habit-item { 
+        padding: 0.6rem 0.5rem; 
+        flex-wrap: wrap; /* Allow habit info and actions to wrap */
+    }
+    .habit-item span {
+        margin-bottom: 0.5rem; /* Add space if actions wrap below */
+        min-width: 100%; /* Ensure it takes full width before actions wrap */
+    }
     .habit-item .complete-btn { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
 
     #calendar-section .calendar-navigation button { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
@@ -504,5 +574,3 @@ footer {
     #charts-container > div { padding: 15px; }
     #charts-container canvas { height: 220px !important; }
 }
-
-[end of style.css]

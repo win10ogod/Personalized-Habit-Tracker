@@ -2,6 +2,97 @@
  * Main script for the Personalized Habit Tracker application.
  * Handles DOM manipulations, event listening, data storage, and rendering of UI components.
  */
+
+// Default target units for habits
+const TARGET_UNITS = ["times", "hours", "minutes", "km", "miles", "pages", "glasses", "servings", "calls"];
+
+// UI Strings for Internationalization (i18n)
+const uiStrings = {
+    currentLanguage: 'en',
+    en: {
+        // General
+        appTitle: "Personalized Habit Tracker",
+        // Header
+        headerTitle: "Personalized Habit Tracker",
+        // Habit Form Section
+        addHabitSectionTitle: "Add New Habit",
+        habitNameLabel: "Habit Name:",
+        habitFrequencyLabel: "Frequency:",
+        dailyFrequencyOption: "Daily",
+        weeklyFrequencyOption: "Weekly",
+        targetValueLabel: "Target Value:",
+        targetUnitLabel: "Target Unit:",
+        addHabitButton: "Add Habit",
+        // My Habits Section
+        myHabitsSectionTitle: "My Habits",
+        noHabitsYet: "No habits added yet. Add one above!",
+        // Calendar Section
+        calendarSectionTitle: "Calendar View",
+        prevMonthButton: "Previous Month",
+        nextMonthButton: "Next Month",
+        // Progress Section
+        progressSectionTitle: "Habit Progress",
+        noProgressYet: "No habits to show progress for.",
+        // Charts Section
+        chartsSectionTitle: "Habit Analysis",
+        streakChartTitle: "Maximum Daily Completions",
+        completionRateChartTitle: "Overall Consistency Rate",
+        noChartDataGlobal: "Charts cannot be displayed or no habits added.", // Used when canvases fail or no habits at all
+        noChartDataSpecific: "No habits added yet to display charts.", // Used when habits array is empty for charts
+        chartsCanvasUnavailable: "Charts cannot be displayed (canvas issue).",
+        // Footer
+        footerText: `© ${new Date().getFullYear()} Personalized Habit Tracker`,
+        clearAllDataButton: "Clear All Records",
+        // Reminder Button
+        enableRemindersButton: "Enable Reminders",
+        remindersNotSupported: "Notifications Not Supported",
+        remindersPermissionDenied: "Permission Denied",
+        remindersEnabledMessage: "Great! Reminders are now enabled.",
+        remindersDeniedUserMessage: "Notification permission is denied. Please enable it in your browser settings if you wish to receive reminders.",
+        // Alerts / Confirmations
+        alertHabitNameEmpty: "Habit name cannot be empty.",
+        confirmClearAllData: "Are you sure you want to clear all habit data? This action cannot be undone.",
+        alertInvalidProgressValue: "Please enter a valid positive number for the progress.",
+        // Button Texts
+        markCompleteButtonText: "Mark Complete",
+        completedButtonWithCount: "Completed ({count})",
+        logProgressButton: "Log {unit}", // e.g. "Log Hours"
+        // Archiving
+        toggleArchivedViewButtonViewArchived: "View Archived",
+        toggleArchivedViewButtonViewActive: "View Active Habits",
+        archiveButtonText: "Archive",
+        restoreButtonText: "Restore",
+        noActiveHabitsYet: "No active habits. Add one or view archived.",
+        noArchivedHabitsYet: "No habits have been archived yet."
+    }
+    // 'es': { /* Spanish translations would go here */ }
+};
+
+/**
+ * Translates a given key using the uiStrings object, with optional parameter replacement.
+ * @param {string} key - The key to translate.
+ * @param {object} [params] - Optional object with parameters to replace in the string (e.g., {count: 5}).
+ * @returns {string} The translated string, or a placeholder if not found.
+ */
+function t(key, params) {
+    const lang = uiStrings.currentLanguage;
+    let str = `[${key}]`; // Default to key if not found
+
+    if (uiStrings[lang] && typeof uiStrings[lang][key] !== 'undefined') {
+        str = uiStrings[lang][key];
+    } else {
+        console.warn(`Missing translation for key: "${key}" in language: "${lang}"`);
+    }
+
+    if (params) {
+        for (const pKey in params) {
+            str = str.replace(new RegExp(`\\{${pKey}\\}`, 'g'), params[pKey]);
+        }
+    }
+    return str;
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     //================================================================================
     // DOM Element References
@@ -9,6 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const habitForm = document.getElementById('habit-form');
     const habitNameInput = document.getElementById('habit-name');
     const habitFrequencySelect = document.getElementById('habit-frequency');
+    const targetValueInputEl = document.getElementById('habit-target-value'); // New
+    const targetUnitInputEl = document.getElementById('habit-target-unit');   // New
     const habitsListEl = document.getElementById('habits-list');
     const requestPermissionBtn = document.getElementById('request-permission-btn');
 
@@ -27,6 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const completionRateChartWrapper = document.getElementById('completion-rate-chart-wrapper');
     const chartsGlobalErrorMessage = document.getElementById('charts-global-error-message');
     const clearAllDataBtn = document.getElementById('clear-all-data-btn');
+    const toggleArchivedViewBtn = document.getElementById('toggle-archived-view-btn'); // New
 
 
     //================================================================================
@@ -37,15 +131,23 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentYear = new Date().getFullYear();
     let streakChartInstance = null; 
     let completionRateChartInstance = null; 
+    let showingArchived = false; // New state for archive view
 
-    // Habit object structure (New):
+    // Habit object structure (New with Flexible Targets & Detailed Completions):
     // {
     //   id: Date.now(),
     //   name: 'Exercise',
     //   frequency: 'daily',
     //   creationDate: new Date().toISOString(),
-    //   targetCount: 1, // Default target completions per period
-    //   completions: { 'YYYY-MM-DD': count } // Object to store completion counts for dates
+    //   targetValue: 1, 
+    //   targetUnit: "times", 
+    //   completions: { 
+    //     'YYYY-MM-DD': { 
+    //       count: X,      // Number of times logged
+    //       totalValue: Y  // Sum of logged values (e.g., total hours, total km)
+    //     } 
+    //   },
+    //   isArchived: false
     // }
 
     //================================================================================
@@ -65,22 +167,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Data migration for habits from old structure
             loadedHabits = loadedHabits.map(habit => {
-                if (habit.completedDates && !habit.completions) {
-                    // This is an old habit structure, migrate it
-                    console.log(`Migrating habit: "${habit.name}"`);
-                    habit.completions = {};
+                // Ensure basic structure
+                habit.completions = habit.completions || {};
+                habit.targetValue = typeof habit.targetValue !== 'undefined' ? habit.targetValue : 1;
+                habit.targetUnit = habit.targetUnit || TARGET_UNITS[0];
+                habit.isArchived = typeof habit.isArchived !== 'undefined' ? habit.isArchived : false;
+
+                // Migration from old completedDates array OR from simple count in completions
+                if (habit.completedDates) { // Very old structure
+                    console.log(`Migrating (completedDates) habit: "${habit.name}"`);
                     habit.completedDates.forEach(dateStr => {
-                        habit.completions[dateStr] = 1; // Assume count of 1 for old completed dates
+                        if (!habit.completions[dateStr] || typeof habit.completions[dateStr] === 'number') {
+                             // If completions[dateStr] is a number, it's the old count
+                            const oldCount = typeof habit.completions[dateStr] === 'number' ? habit.completions[dateStr] : 1;
+                            habit.completions[dateStr] = { count: oldCount, totalValue: oldCount };
+                        }
                     });
                     delete habit.completedDates;
-                    habit.targetCount = 1; // Add default targetCount
-                } else if (!habit.completions) {
-                    // If completions is missing entirely (e.g. very old or malformed)
-                    habit.completions = {};
+                } else { // Check for completions that are just numbers (not objects)
+                    for (const dateStr in habit.completions) {
+                        if (typeof habit.completions[dateStr] === 'number') {
+                            console.log(`Migrating (numeric completions) habit: "${habit.name}" for date ${dateStr}`);
+                            const oldCount = habit.completions[dateStr];
+                            habit.completions[dateStr] = { count: oldCount, totalValue: oldCount };
+                        }
+                    }
                 }
-                // Ensure targetCount exists
-                if (typeof habit.targetCount === 'undefined') {
-                    habit.targetCount = 1;
+                
+                // Migrate old targetCount to targetValue
+                if (typeof habit.targetCount !== 'undefined') {
+                    habit.targetValue = habit.targetCount;
+                    delete habit.targetCount;
                 }
                 return habit;
             });
@@ -117,44 +234,75 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         habitsListEl.innerHTML = ''; // Clear current list
 
-        if (habits.length === 0) {
-            habitsListEl.innerHTML = '<p>No habits added yet. Add one above!</p>';
+        const habitsToDisplay = habits.filter(habit => habit.isArchived === showingArchived);
+
+        if (habitsToDisplay.length === 0) {
+            habitsListEl.innerHTML = `<p class="empty-list-message">${showingArchived ? t('noArchivedHabitsYet') : t('noActiveHabitsYet')}</p>`;
             return;
         }
 
         const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-        habits.forEach(habit => {
+        habitsToDisplay.forEach(habit => {
             const habitEl = document.createElement('li');
             habitEl.className = 'habit-item';
+            if (habit.isArchived) {
+                habitEl.classList.add('archived-item'); // Optional: for specific styling of archived items
+            }
             habitEl.dataset.habitId = habit.id;
 
             const habitInfo = document.createElement('span');
-            // Get today's count for this habit
-            const todayCount = habit.completions && habit.completions[todayStr] ? habit.completions[todayStr] : 0;
+            const todayProgress = (habit.completions && habit.completions[todayStr]) ? 
+                                  habit.completions[todayStr] : 
+                                  { count: 0, totalValue: 0 };
 
-            if (todayCount > 0) {
-                habitInfo.textContent = `${habit.name} (${habit.frequency}) (Today: ${todayCount})`;
-                habitEl.classList.add('completed'); // Mark as completed if count > 0
+            let habitDisplayText = `${habit.name} (${habit.frequency})`;
+            if (todayProgress.count > 0 && !habit.isArchived) { // Only show "Today" info for active, completed habits
+                if (habit.targetUnit === 'times') {
+                    habitDisplayText += ` (Today: ${todayProgress.count} ${habit.targetUnit})`;
+                } else {
+                    habitDisplayText += ` (Today: ${todayProgress.totalValue} ${habit.targetUnit})`;
+                }
+                habitEl.classList.add('completed');
             } else {
-                habitInfo.textContent = `${habit.name} (${habit.frequency})`;
-                habitEl.classList.remove('completed'); // Ensure not marked if count is 0
+                habitEl.classList.remove('completed');
             }
+            habitInfo.textContent = habitDisplayText;
             
+            const actionsContainer = document.createElement('div'); // Container for buttons
+            actionsContainer.className = 'habit-actions';
+
             const completeBtn = document.createElement('button');
-            completeBtn.className = 'complete-btn';
+            completeBtn.className = 'complete-btn btn btn-sm btn-success'; // Added more btn classes
 
-            if (todayCount > 0) {
-                completeBtn.textContent = `Completed (${todayCount})`;
+            if (habit.targetUnit === 'times') {
+                if (todayProgress.count > 0 && !habit.isArchived) {
+                    completeBtn.textContent = t('completedButtonWithCount', { count: todayProgress.count });
+                } else {
+                    completeBtn.textContent = t('markCompleteButtonText');
+                }
             } else {
-                completeBtn.textContent = 'Mark Complete';
+                completeBtn.textContent = t('logProgressButton', { unit: habit.targetUnit });
             }
-            completeBtn.disabled = false; // Button is always enabled to allow more completions
-
+            completeBtn.disabled = habit.isArchived; // Disable if archived
             completeBtn.addEventListener('click', () => handleMarkComplete(habit.id));
+            actionsContainer.appendChild(completeBtn);
+
+            // Add Archive/Restore button
+            const archiveRestoreBtn = document.createElement('button');
+            archiveRestoreBtn.className = `btn btn-sm ${showingArchived ? 'btn-info restore-btn' : 'btn-warning archive-btn'}`;
+            
+            if (showingArchived) {
+                archiveRestoreBtn.textContent = t('restoreButtonText');
+                archiveRestoreBtn.addEventListener('click', () => restoreHabitById(habit.id));
+            } else {
+                archiveRestoreBtn.textContent = t('archiveButtonText');
+                archiveRestoreBtn.addEventListener('click', () => archiveHabitById(habit.id));
+            }
+            actionsContainer.appendChild(archiveRestoreBtn);
 
             habitEl.appendChild(habitInfo);
-            habitEl.appendChild(completeBtn);
+            habitEl.appendChild(actionsContainer); // Append container of buttons
             habitsListEl.appendChild(habitEl);
         });
     }
@@ -214,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
         progressBarsContainer.innerHTML = '';
 
         if (habits.length === 0) {
-            progressBarsContainer.innerHTML = '<p>No habits to show progress for.</p>';
+            progressBarsContainer.innerHTML = `<p>${t('noProgressYet')}</p>`;
             return;
         }
 
@@ -298,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!streakChartCtx || !completionRateChartCtx) {
             console.warn("Chart canvas contexts not found.");
-            chartsGlobalErrorMessage.textContent = "Charts cannot be displayed (canvas issue).";
+            chartsGlobalErrorMessage.textContent = t('chartsCanvasUnavailable');
             chartsGlobalErrorMessage.style.display = 'block';
             return;
         }
@@ -315,7 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (habits.length === 0) {
             // console.log("No habits to render charts.");
-            chartsGlobalErrorMessage.textContent = "No habits added yet to display charts.";
+            chartsGlobalErrorMessage.textContent = t('noChartDataSpecific');
             chartsGlobalErrorMessage.style.display = 'block';
             // Canvases are effectively hidden because their wrappers are not shown
             return;
@@ -400,7 +548,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         // suggestedMax might need adjustment or removal depending on typical max counts
                         title: {
                             display: true,
-                            text: 'Max Daily Completions' // Updated Y-axis label
+                    text: t('streakChartTitle') // Using translated title
                         },
                         grid: {
                             lineWidth: 1 
@@ -471,8 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     label += ': ';
                                 }
                                 if (context.parsed !== null) {
-                                    // E.g., "Reading: 75.0% days performed"
-                                    label += context.parsed + '% consistency'; 
+                                    label += context.parsed + '% ' + t('consistencyRateLabelSuffix'); // e.g. "consistency" or "days performed"
                                 }
                                 return label;
                             }
@@ -482,6 +629,89 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    //================================================================================
+    // UI Text Update Function
+    //================================================================================
+    /**
+     * Updates all static UI text elements with translated strings.
+     */
+    function updateStaticUIText() {
+        document.title = t('appTitle');
+        // Header
+        const headerTitleEl = document.querySelector('header h1');
+        if (headerTitleEl) headerTitleEl.textContent = t('headerTitle');
+        
+        // Habit Form Section
+        const addHabitSectionTitleEl = document.querySelector('#habit-form-section h2');
+        if (addHabitSectionTitleEl) addHabitSectionTitleEl.textContent = t('addHabitSectionTitle');
+        
+        const habitNameLabelEl = document.querySelector('label[for="habit-name"]');
+        if (habitNameLabelEl) habitNameLabelEl.textContent = t('habitNameLabel');
+        
+        const habitFrequencyLabelEl = document.querySelector('label[for="habit-frequency"]');
+        if (habitFrequencyLabelEl) habitFrequencyLabelEl.textContent = t('habitFrequencyLabel');
+        
+        const dailyFreqOption = document.querySelector('#habit-frequency option[value="daily"]');
+        if (dailyFreqOption) dailyFreqOption.textContent = t('dailyFrequencyOption');
+        const weeklyFreqOption = document.querySelector('#habit-frequency option[value="weekly"]');
+        if (weeklyFreqOption) weeklyFreqOption.textContent = t('weeklyFrequencyOption');
+
+        const targetValueLabelEl = document.querySelector('label[for="habit-target-value"]');
+        if (targetValueLabelEl) targetValueLabelEl.textContent = t('targetValueLabel');
+        
+        const targetUnitLabelEl = document.querySelector('label[for="habit-target-unit"]');
+        if (targetUnitLabelEl) targetUnitLabelEl.textContent = t('targetUnitLabel');
+
+        const addHabitButtonEl = document.querySelector('#habit-form input[type="submit"]');
+        if (addHabitButtonEl) addHabitButtonEl.value = t('addHabitButton');
+
+        // My Habits Section
+        const myHabitsSectionTitleEl = document.querySelector('#habits-list-section h2');
+        if (myHabitsSectionTitleEl) myHabitsSectionTitleEl.textContent = t('myHabitsSectionTitle');
+        // Note: noHabitsYet is handled in renderHabits
+
+        // Calendar Section
+        const calendarSectionTitleEl = document.querySelector('#calendar-section h2');
+        if (calendarSectionTitleEl) calendarSectionTitleEl.textContent = t('calendarSectionTitle');
+        if (prevMonthBtn) prevMonthBtn.textContent = t('prevMonthButton'); // prevMonthBtn is already a DOM ref
+        if (nextMonthBtn) nextMonthBtn.textContent = t('nextMonthButton'); // nextMonthBtn is already a DOM ref
+
+        // Progress Section
+        const progressSectionTitleEl = document.querySelector('#progress-section h2');
+        if (progressSectionTitleEl) progressSectionTitleEl.textContent = t('progressSectionTitle');
+        // Note: noProgressYet is handled in renderProgressBars
+
+        // Charts Section
+        const chartsSectionTitleEl = document.querySelector('#charts-container h2'); // h2 is inside charts-container
+        if (chartsSectionTitleEl) chartsSectionTitleEl.textContent = t('chartsSectionTitle');
+        
+        const streakChartTitleEl = document.querySelector('#streak-chart-wrapper h3');
+        if (streakChartTitleEl) streakChartTitleEl.textContent = t('streakChartTitle');
+        
+        const completionRateChartTitleEl = document.querySelector('#completion-rate-chart-wrapper h3');
+        if (completionRateChartTitleEl) completionRateChartTitleEl.textContent = t('completionRateChartTitle');
+        // Note: noChartData messages are handled in renderCharts
+
+        // Footer
+        const footerTextEl = document.querySelector('footer p');
+        if (footerTextEl) footerTextEl.textContent = t('footerText');
+        if (clearAllDataBtn) clearAllDataBtn.textContent = t('clearAllDataButton'); // clearAllDataBtn is already a DOM ref
+
+        // Reminder Button
+        if (requestPermissionBtn) { // requestPermissionBtn is already a DOM ref
+             // Default text set in handleNotificationPermission, but an initial set might be good
+             // if the button is visible by default before JS fully processes permissions.
+            if (Notification.permission === 'default') {
+                 requestPermissionBtn.textContent = t('enableRemindersButton');
+            }
+        }
+        // Toggle Archived View Button
+        if (toggleArchivedViewBtn) {
+            toggleArchivedViewBtn.textContent = showingArchived ? t('toggleArchivedViewButtonViewActive') : t('toggleArchivedViewButtonViewArchived');
+        }
+    }
+
 
     //================================================================================
     // Helper Functions
@@ -557,15 +787,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const currentDate = new Date().toISOString().split('T')[0];
         
-        // Ensure completions object exists
+        // Ensure completions object and the entry for the current date are initialized
         if (!currentHabit.completions) {
             currentHabit.completions = {};
         }
+        if (!currentHabit.completions[currentDate]) {
+            currentHabit.completions[currentDate] = { count: 0, totalValue: 0 };
+        }
 
-        // Increment the count for the current date
-        currentHabit.completions[currentDate] = (currentHabit.completions[currentDate] || 0) + 1;
-        
-        console.log(`Habit "${currentHabit.name}" marked complete. Today's count: ${currentHabit.completions[currentDate]}`);
+        if (currentHabit.targetUnit === 'times') {
+            currentHabit.completions[currentDate].count += 1;
+            currentHabit.completions[currentDate].totalValue += 1; // Each "time" contributes 1 to total value
+            console.log(`Habit "${currentHabit.name}" marked complete. Today's count: ${currentHabit.completions[currentDate].count}`);
+        } else {
+            const unitToLog = currentHabit.targetUnit || 'value';
+            const promptMessage = t('promptLogValue', { unit: unitToLog, habitName: currentHabit.name });
+            const loggedAmountStr = prompt(promptMessage);
+
+            if (loggedAmountStr === null) { // User cancelled
+                return; 
+            }
+
+            const loggedAmount = parseFloat(loggedAmountStr);
+            if (isNaN(loggedAmount) || loggedAmount <= 0) {
+                alert(t('alertInvalidProgressValue'));
+                return;
+            }
+
+            currentHabit.completions[currentDate].count += 1; // Increment count of log entries
+            currentHabit.completions[currentDate].totalValue += loggedAmount; // Add logged amount to total value
+            console.log(`Logged ${loggedAmount} ${unitToLog} for "${currentHabit.name}". Today's total: ${currentHabit.completions[currentDate].totalValue} ${unitToLog}, Entries: ${currentHabit.completions[currentDate].count}`);
+        }
             
         saveHabits();
         renderAll(); // Re-render all relevant UI components
@@ -596,12 +848,12 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Notification permission granted.');
             requestPermissionBtn.style.display = 'none';
         } else if (permission === 'denied') {
-            console.log('Notification permission denied.');
-            requestPermissionBtn.textContent = 'Permission Denied';
+            console.log('Notification permission denied.'); // Developer log
+            requestPermissionBtn.textContent = t('remindersPermissionDenied');
             requestPermissionBtn.disabled = true;
         } else { // 'default'
             // console.log('Notification permission not yet requested.');
-            requestPermissionBtn.textContent = 'Enable Reminders';
+            requestPermissionBtn.textContent = t('enableRemindersButton');
             requestPermissionBtn.disabled = false;
             requestPermissionBtn.style.display = 'block';
         }
@@ -659,13 +911,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Duplicate name prevention logic removed as per subtask
 
+            const targetValue = parseInt(targetValueInputEl.value, 10) || 1;
+            const targetUnit = targetUnitInputEl.value || TARGET_UNITS[0];
+
             const newHabit = {
                 id: Date.now(),
                 name: habitName, 
                 frequency: habitFrequency,
                 creationDate: new Date().toISOString(),
-                targetCount: 1,         // New field
-                completions: {}         // New structure, replaces completedDates
+                targetValue: targetValue,
+                targetUnit: targetUnit,
+                completions: {},
+                isArchived: false // New habits are active by default
             };
             habits.push(newHabit);
             // console.log('New habit added:', newHabit);
@@ -673,9 +930,23 @@ document.addEventListener('DOMContentLoaded', () => {
             saveHabits();
             renderAll();
             habitNameInput.value = ''; // Clear input field
+            targetValueInputEl.value = '1'; // Reset to default
+            targetUnitInputEl.value = TARGET_UNITS[0]; // Reset to default
         });
     } else {
         console.error("Habit form element not found!");
+    }
+
+    // Populate Target Unit Dropdown
+    if (targetUnitInputEl) {
+        TARGET_UNITS.forEach(unit => {
+            const option = document.createElement('option');
+            option.value = unit;
+            option.textContent = unit.charAt(0).toUpperCase() + unit.slice(1); // Capitalize for display
+            targetUnitInputEl.appendChild(option);
+        });
+    } else {
+        console.warn("Target unit input element not found during dropdown population.");
     }
 
     // Calendar Navigation
@@ -707,9 +978,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Notification Permission Request Button
     if (!("Notification" in window)) {
-        console.log("This browser does not support desktop notification.");
+            console.log("This browser does not support desktop notification"); // Developer log
         if (requestPermissionBtn) {
-            requestPermissionBtn.textContent = 'Notifications Not Supported';
+                requestPermissionBtn.textContent = t('remindersNotSupported');
             requestPermissionBtn.disabled = true;
         }
     } else {
@@ -722,12 +993,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     Notification.requestPermission().then(permission => {
                         handleNotificationPermission(permission);
                         if (permission === 'granted') {
-                            new Notification("Great!", { body: "Reminders are now enabled." });
+                                new Notification(t('remindersEnabledMessage'), { body: t('remindersEnabledMessage') }); // Title and body can be same or different
                         }
                     });
                 } else if (Notification.permission === 'denied') {
-                    // Optionally, guide user to manually enable permissions if they click while denied
-                    alert("Notification permission is denied. Please enable it in your browser settings if you wish to receive reminders.");
+                        alert(t('remindersDeniedUserMessage'));
                 }
             });
         }
@@ -737,19 +1007,75 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial Application Setup
     //================================================================================
     loadHabits();
+    updateStaticUIText(); // Call to set initial static text
     renderAll(); // Initial render of all UI components
     
     // Trigger reminders after a delay (e.g., 10 seconds after page load)
     // This is a simple timeout; a real app might use a more sophisticated scheduling mechanism or service worker.
     setTimeout(checkAndSendReminders, 10000); 
 
+    // Event Listener for Toggle Archived View Button
+    if (toggleArchivedViewBtn) {
+        toggleArchivedViewBtn.addEventListener('click', () => {
+            showingArchived = !showingArchived;
+            // Update button text immediately
+            toggleArchivedViewBtn.textContent = showingArchived ? t('toggleArchivedViewButtonViewActive') : t('toggleArchivedViewButtonViewArchived');
+            renderHabits(); // Re-render the habit list only
+            // Note: We might want to update other sections (like charts/progress) if they should also respect this filter.
+            // For now, only habit list is affected as per subtask focus.
+            // If renderAll() is called, ensure it respects 'showingArchived' or that charts/progress show all data.
+        });
+    } else {
+        console.warn("Toggle Archived View button not found!");
+    }
+
+    //================================================================================
+    // Habit Archiving Functions
+    //================================================================================
+
+    /**
+     * Marks a habit as archived.
+     * @param {number} habitId - The ID of the habit to archive.
+     */
+    function archiveHabitById(habitId) {
+        const habitIndex = habits.findIndex(h => h.id === habitId);
+        if (habitIndex > -1) {
+            habits[habitIndex].isArchived = true;
+            saveHabits();
+            renderAll(); // Re-render to reflect changes (e.g., habit might disappear from active list)
+            console.log(`Habit with ID ${habitId} archived.`);
+        } else {
+            console.error(`Attempted to archive non-existent habit with ID ${habitId}.`);
+        }
+    }
+
+    /**
+     * Marks an archived habit as active (restores it).
+     * @param {number} habitId - The ID of the habit to restore.
+     */
+    function restoreHabitById(habitId) {
+        const habitIndex = habits.findIndex(h => h.id === habitId);
+        if (habitIndex > -1) {
+            habits[habitIndex].isArchived = false;
+            saveHabits();
+            renderAll(); // Re-render to reflect changes
+            console.log(`Habit with ID ${habitId} restored.`);
+        } else {
+            console.error(`Attempted to restore non-existent habit with ID ${habitId}.`);
+        }
+    }
+
+    // Example Usage (for testing - can be removed or tied to UI later):
+    // window.archiveHabit = archiveHabitById;
+    // window.restoreHabit = restoreHabitById;
+
     // Event Listener for Clear All Data Button
     if (clearAllDataBtn) {
         clearAllDataBtn.addEventListener('click', () => {
-            if (confirm("Are you sure you want to clear all habit data? This action cannot be undone.")) {
+            if (confirm(t('confirmClearAllData'))) {
                 habits = []; // Reset the global habits array
                 localStorage.removeItem('habits'); // Clear from LocalStorage
-                console.log('All habit data cleared.');
+                console.log('All habit data cleared.'); // Developer log
                 renderAll(); // Re-render the entire UI to reflect the empty state
             } else {
                 // User cancelled, do nothing

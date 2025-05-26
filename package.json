@@ -1,0 +1,22 @@
+{
+  "name": "personalized-habit-tracker",
+  "version": "1.0.0",
+  "description": "A desktop application for tracking personal habits.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "keywords": [
+    "Habit",
+    "Tracker",
+    "Electron"
+  ],
+  "author": "AI Assistant (Jules)",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
+  }
+}

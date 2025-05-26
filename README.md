@@ -20,7 +20,9 @@ A client-side web application designed to help users define, track, and maintain
 *   **User-Friendly Interface:** A clean and intuitive UI for ease of use.
 *   **Clear All Records:** An option to clear all habit data from the application and browser storage, with a confirmation prompt.
 
-## How to Use / Getting Started
+## How to Use / Getting Started (Web Version)
+
+This section describes how to run the application directly in a web browser. For running as a desktop application, see the "Running as a Desktop Application (Electron)" section below.
 
 1.  **Clone the Repository (or Download Files):**
     If you have Git installed, you can clone the repository:
@@ -62,6 +64,59 @@ A client-side web application designed to help users define, track, and maintain
 *   **Chart.js:** A JavaScript charting library used via a CDN to render data analysis charts.
 *   **Browser LocalStorage API:** For client-side storage of habit data, enabling persistence across sessions.
 *   **Browser Notification API:** For displaying reminder notifications.
+*   **Electron (for Desktop Version):** Used to wrap the web application into a cross-platform desktop application.
+    *   **Electron Builder:** Used for packaging the Electron application into distributable formats.
+
+## Running as a Desktop Application (Electron)
+
+This section explains how to set up and run the Personalized Habit Tracker as a desktop application using Electron.
+
+### Prerequisites
+
+*   **Node.js (which includes npm)** installed on your system. You can download it from [https://nodejs.org/](https://nodejs.org/).
+*   **(Optional but Recommended for Packaging) Yarn:** While npm works, `electron-builder` often has smoother integration with Yarn for some users. `npm install -g yarn`.
+
+### Setup & Running in Development Mode
+
+1.  **Clone the repository (if you haven't already):**
+    ```bash
+    # Replace <repository-url> with the actual URL of this project
+    git clone <repository-url>
+    cd <repository-directory>
+    ```
+
+2.  **Install dependencies:** This will download Electron and other necessary packages defined in `package.json`.
+    ```bash
+    npm install
+    ```
+    *(Or, if you prefer Yarn: `yarn install`)*
+
+3.  **Run the application:**
+    ```bash
+    npm start
+    ```
+    *(Or, if you prefer Yarn: `yarn start`)*
+
+    This will launch the Habit Tracker in a desktop window.
+
+### Building Distributable Packages (Optional)
+
+To create distributable packages for your operating system (e.g., .exe for Windows, .app for macOS, .AppImage/.deb for Linux), you can use `electron-builder` (which was included in `devDependencies`).
+
+**Example Commands:**
+
+To build for your current OS:
+```bash
+npm run dist
+```
+*(Or `yarn dist`)*
+
+This will create a `dist` folder containing the packaged application.
+
+For more specific build targets (e.g., building for Windows from macOS), please refer to the `electron-builder` documentation.
+
+**Note:** Building requires a correctly configured development environment for the target platform(s) (e.g., Xcode for macOS, specific toolchains for Linux, etc.).
+
 
 ## Potential Future Improvements
 
@@ -75,6 +130,7 @@ A client-side web application designed to help users define, track, and maintain
 *   **Service Workers:** Implement for more reliable background notifications or basic offline capabilities.
 *   **Accessibility (ARIA):** Conduct a thorough accessibility review and implement further ARIA attributes for improved screen reader support and keyboard navigation.
 *   **Habit Archiving/Ordering:** Allow users to archive old habits or reorder their current habits.
+*   **Local Chart.js:** Bundle Chart.js locally instead of relying on a CDN for better offline reliability in the desktop app.
 
 ---
 *This README provides an overview of the Personalized Habit Tracker application, its features, and how to get started.*

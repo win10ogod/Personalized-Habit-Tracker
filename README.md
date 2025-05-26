@@ -18,9 +18,9 @@ A client-side web application designed to help users define, track, and maintain
 *   **Progress Bars:** Track current progress:
     *   Daily habits show logged progress against their defined target value and unit (e.g., "15/30 minutes" or "2/3 times").
     *   Weekly habits show the number of days in the current week the habit was performed at least once.
-*   **Data Analysis Charts (Aggregated by Habit Name):**
-    *   **Max Daily Completions/Value (Bar Chart):** Displays the maximum total value (e.g., total minutes, total km) or count (for "times" habits) logged for a habit on any single day.
-    *   **Consistency Rate (Pie Chart):** Shows the percentage of days a habit has been performed at least once since its creation.
+*   **Data Analysis Charts (Aggregated by Habit Name for Active Habits):**
+    *   **Max Daily Completions/Value (Bar Chart):** Displays **Max Daily Completions/Value** for each **active, aggregated habit type**.
+    *   **Consistency Rate (Pie Chart):** Shows **Consistency Rate** (percentage of days performed since creation) for each **active, aggregated habit type**.
 *   **Reminder Notifications:** Basic browser notifications for incomplete daily habits (permission-based, checks against target value).
 *   **Responsive Design:** User-friendly interface across various screen sizes.
 *   **Clear All Records:** Option to clear all habit data with confirmation.
@@ -128,6 +128,9 @@ For more specific build targets (e.g., building for Windows from macOS), please 
 
 **Note:** Building requires a correctly configured development environment for the target platform(s) (e.g., Xcode for macOS, specific toolchains for Linux, etc.).
 
+## Known Issues
+
+*   **Habit Progress Display:** The "Habit Progress" section currently displays a separate progress bar for each individual habit instance, rather than a single aggregated bar for habits with the same name. Additionally, it displays progress for all habits (both active and archived) instead of respecting the "View Archived" toggle. This is different from the "Habit Analysis" (Charts) section, which correctly aggregates by name and only shows active habits. A fix for this is pending due to technical limitations during development.
 
 ## Potential Future Improvements
 
